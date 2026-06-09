@@ -1,0 +1,34 @@
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Example-generated data and model artifacts
+Examples/01-CoreAI-PlantDiseaseDetector/python/data/sample_leaf_dataset/
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.pt
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.pth
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.json
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.onnx
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.mlmodel
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.mlpackage
+Examples/01-CoreAI-PlantDiseaseDetector/python/models/core_ai/
+
+# PlantDiseaseDetector local/generated model artifacts
+Examples/01-CoreAI-PlantDiseaseDetector/models/raw/*.pt
+Examples/01-CoreAI-PlantDiseaseDetector/models/raw/*.pth
+Examples/01-CoreAI-PlantDiseaseDetector/models/exported/*
+Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/*
+!Examples/01-CoreAI-PlantDiseaseDetector/models/**/.gitkeep
+!Examples/01-CoreAI-PlantDiseaseDetector/models/**/README.md
+
+# Apple/Xcode
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/

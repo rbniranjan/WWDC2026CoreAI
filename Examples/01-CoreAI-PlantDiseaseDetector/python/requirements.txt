@@ -1,0 +1,8 @@
+torch
+torchvision
+pillow
+numpy
+tqdm
+# Optional, not locally verified here:
+# coremltools
+
