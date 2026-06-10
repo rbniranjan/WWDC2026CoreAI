@@ -13,11 +13,11 @@ struct DetectionBoundingBox: Hashable {
     }
 
     var summary: String {
-        let x = normalizedRect.origin.x.formatted(.number.precision(.fractionLength(2)))
-        let y = normalizedRect.origin.y.formatted(.number.precision(.fractionLength(2)))
-        let width = normalizedRect.size.width.formatted(.number.precision(.fractionLength(2)))
-        let height = normalizedRect.size.height.formatted(.number.precision(.fractionLength(2)))
+        let style = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(2))
+        let x = Double(normalizedRect.origin.x).formatted(style)
+        let y = Double(normalizedRect.origin.y).formatted(style)
+        let width = Double(normalizedRect.size.width).formatted(style)
+        let height = Double(normalizedRect.size.height).formatted(style)
         return "x:\(x) y:\(y) w:\(width) h:\(height) normalized"
     }
 }
-
