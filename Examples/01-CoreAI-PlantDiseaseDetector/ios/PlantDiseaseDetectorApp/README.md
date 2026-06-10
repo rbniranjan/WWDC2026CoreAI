@@ -35,7 +35,7 @@ PlantDiseaseDetectorApp/
 - The app attempts the Core AI detector path first in automatic mode.
 - If no model asset is present, the mock detector returns deterministic sample detections.
 - The runtime panel clearly reports `Mock fallback` when that path is active.
-- That mock fallback remains the active local behavior because no real `.aimodel` was generated in this repository yet.
+- That mock fallback remains the active local behavior unless the generated raw-output `.aimodel` is copied into the app bundle and the runtime loader/postprocessing path is completed.
 
 ## Model Placement
 
@@ -43,6 +43,12 @@ Place future converted detector assets here:
 
 ```text
 PlantDiseaseDetectorApp/Resources/AIModels/
+```
+
+Current locally generated asset:
+
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel
 ```
 
 Labels are currently loaded from:
@@ -61,5 +67,6 @@ PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json
 
 - Real Core AI model loading and inference are still TODO pending SDK verification.
 - The bundled label JSON now contains the verified real `38` class names from the validated YAML/model pair.
-- No real `.aimodel` is bundled because official Core AI Python tooling was not discoverable locally.
+- The generated `.aimodel` stays local/ignored and is not committed or bundled automatically.
+- Postprocessing for raw Core AI outputs still needs to be implemented in Swift.
 - Xcode build success is not claimed unless separately verified in the local environment.

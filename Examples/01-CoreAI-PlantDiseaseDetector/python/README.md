@@ -9,7 +9,7 @@ This folder contains the Phase 1B-2 local export/conversion pipeline for the YOL
 - Inspect a local YOLO checkpoint at `../models/raw/best.pt`.
 - Normalize detector outputs into a Python/iOS-friendly contract shape.
 - Export intermediate detector artifacts into `../models/exported/`.
-- Attempt Core AI conversion only when official tooling is actually discoverable.
+- Convert the model to a Core AI raw-output asset when `.venv-coreai` and `coreai_torch` are available.
 - Generate an iOS handoff package in `../models/ios-package/`.
 
 ## Local Model Placement
@@ -29,8 +29,14 @@ This file is intentionally not committed to Git.
 - The model class order matched `configs/full_plant_data.yaml` exactly.
 - TorchScript export succeeded to `../models/exported/best.torchscript`.
 - ONNX export succeeded to `../models/exported/best.onnx`.
-- Core AI conversion remained blocked because official Core AI Python tooling was not discoverable.
+- Core AI raw-output conversion succeeded to `../models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`.
 - The generated iOS handoff package includes `model_contract.json` and the real `38`-class `plant_disease_labels.json`.
+
+## Why Core AI Uses Raw Detector Outputs
+
+- The Core AI asset exports `raw_boxes` and `raw_scores` directly from the YOLO detect head.
+- This keeps the asset focused on stable tensor inference rather than baking postprocessing assumptions into the conversion.
+- The iOS app is responsible for confidence filtering, any NMS/postprocessing policy, class mapping, and overlay rendering in Swift.
 
 ## Install Dependencies
 
@@ -90,11 +96,31 @@ python3 export_yolo_model.py \
 ## Attempt Core AI Conversion
 
 ```bash
-python3 convert_to_core_ai.py \
+.venv-coreai/bin/python convert_to_core_ai.py \
   --model-path ../models/raw/best.pt \
   --output-dir ../models/core-ai \
   --data-yaml configs/full_plant_data.yaml \
   --imgsz 320
+```
+
+Expected local outputs:
+
+- `../models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
+- `../models/core-ai/core_ai_conversion_metadata.json`
+
+Repeatable reruns:
+
+- If the `.aimodel` already exists, the script fails early by default.
+- Re-run with `--overwrite` to replace only that exact asset path.
+- The script never deletes the whole `models/core-ai/` directory.
+
+```bash
+.venv-coreai/bin/python convert_to_core_ai.py \
+  --model-path ../models/raw/best.pt \
+  --output-dir ../models/core-ai \
+  --data-yaml configs/full_plant_data.yaml \
+  --imgsz 320 \
+  --overwrite
 ```
 
 ## Create The iOS Handoff Package
@@ -120,6 +146,6 @@ python3 -m pytest tests
 ## Phase Boundary
 
 - Full production-grade Ultralytics result parsing may still expand in later phases.
-- Core AI conversion only proceeds when official tooling is actually present and verified.
-- If official Core AI tooling is unavailable, `convert_to_core_ai.py` writes blocked metadata instead of faking success.
+- Core AI conversion uses the verified local `coreai_torch` path in `.venv-coreai`.
+- The Core AI asset intentionally exposes raw detector outputs, so Swift remains responsible for postprocessing.
 - Generated export/conversion binaries remain local and ignored by Git unless intentionally distributed later outside the repository.

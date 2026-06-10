@@ -12,7 +12,9 @@ cd Examples/01-CoreAI-PlantDiseaseDetector/python
 .venv/bin/python -m py_compile *.py
 find .. -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) ! -path "../models/*" ! -path "../ios/*/Assets.xcassets/*" | head -20
 .venv/bin/python export_yolo_model.py --model-path ../models/raw/best.pt --output-dir ../models/exported --formats torchscript,onnx --imgsz 320
-.venv/bin/python convert_to_core_ai.py --model-path ../models/raw/best.pt --output-dir ../models/core-ai --data-yaml configs/full_plant_data.yaml --imgsz 320
+.venv-coreai/bin/python --version
+.venv-coreai/bin/python -c "import torch, coreai_torch; print(torch.__version__, coreai_torch.__version__)"
+.venv-coreai/bin/python convert_to_core_ai.py --model-path ../models/raw/best.pt --output-dir ../models/core-ai --data-yaml configs/full_plant_data.yaml --imgsz 320
 .venv/bin/python create_ios_model_package.py --data-yaml configs/full_plant_data.yaml --output-dir ../models/ios-package --core-ai-dir ../models/core-ai
 plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Info.plist
 plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj/project.pbxproj
@@ -34,8 +36,10 @@ plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj/pr
 - `export_yolo_model.py`: pass
 - TorchScript export: pass, `models/exported/best.torchscript`
 - ONNX export: pass, `models/exported/best.onnx`
-- `convert_to_core_ai.py`: pass for blocked-path behavior; wrote `models/core-ai/core_ai_conversion_metadata.json` with status `blocked`
-- `.aimodel` generation: blocked
+- `.venv-coreai` Python version (`Python 3.12.13`): pass
+- `torch` + `coreai_torch` imports inside `.venv-coreai`: pass (`torch 2.11.0`, `coreai_torch 0.4.0`)
+- `convert_to_core_ai.py`: pass
+- `.aimodel` generation: pass, `models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
 - `create_ios_model_package.py`: pass; wrote `models/ios-package/model_contract.json`, `plant_disease_labels.json`, and `README.md`
 - iOS `Info.plist` lint: pass
 - iOS `project.pbxproj` lint: pass
@@ -43,12 +47,11 @@ plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj/pr
 ## Environment Limitations
 
 - No reasonable local plant/leaf sample image was available, so real one-image detection was not run.
-- Core AI conversion remained blocked because no official Core AI Python tooling was discoverable in this environment.
+- The generated `.aimodel` remains a local ignored artifact and was not committed.
 - Generated export/conversion artifacts remain local and ignored; they are not committed to Git.
 
 ## Not Verified
 
 - Real one-image detector inference on a local plant/leaf sample
-- Real Core AI `.aimodel` generation
 - Real Core AI runtime inference inside the iOS app
 - Xcode app build success

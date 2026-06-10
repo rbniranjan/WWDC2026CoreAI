@@ -4,6 +4,7 @@
 
 # Python
 .venv/
+.venv-coreai/
 venv/
 __pycache__/
 *.py[cod]

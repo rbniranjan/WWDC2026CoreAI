@@ -17,6 +17,20 @@
 }
 ```
 
+## Core AI Raw Outputs
+
+The Core AI asset intentionally exposes raw detector tensors instead of final postprocessed detections:
+
+- `raw_boxes`: shape `[1, 4, 2100]`
+- `raw_scores`: shape `[1, 38, 2100]`
+
+Swift is responsible for:
+
+- confidence filtering
+- class winner selection
+- any non-maximum suppression policy
+- conversion into `PlantDiseaseDetection` values for overlay/UI rendering
+
 Current Phase 1B-1 note:
 
 - The Python output adapter normalizes detections into this shape.
@@ -27,7 +41,7 @@ Phase 1B-2 additions:
 
 - `run_local_detection.py` writes one-image detection results using this normalized format when a sample image is available.
 - `create_ios_model_package.py` writes `model_contract.json` and `plant_disease_labels.json` for the iOS handoff package.
-- Any future `.aimodel` must preserve this detection contract or document any conversion-side post-processing changes explicitly.
+- The generated `.aimodel` now preserves raw detector outputs so iOS can apply postprocessing explicitly in Swift.
 
 ## Verified Labels
 

@@ -23,14 +23,16 @@ Examples/01-CoreAI-PlantDiseaseDetector/ios/
 - The app prefers `CoreAIPlantDiseaseDetector` first when detection runs.
 - If no real model asset is present, the app falls back to `MockPlantDiseaseDetector`.
 - The mock detector returns deterministic sample detections and uses normalized bounding boxes so the overlay UI is demonstrable immediately.
-- Today the app remains in this mock-fallback path because no real `.aimodel` was generated locally.
+- Today the app remains in this mock-fallback path unless you explicitly copy the generated `.aimodel` into the app bundle and wire up the runtime integration.
 
 ## Model Placement
 
 - Future converted Apple-side detector assets should be copied into:
   `Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/`
 - `CoreAIPlantDiseaseDetector.swift` only verifies model presence today. It does not contain unverified Core AI runtime calls.
-- The latest local Core AI conversion attempt was blocked because official Core AI Python tooling was not discoverable, so `Resources/AIModels/` still contains README-only guidance.
+- A local Core AI raw-output model was generated at:
+  `Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
+- It is not auto-copied into the app bundle and is intentionally not committed.
 
 ## Labels
 
@@ -46,10 +48,19 @@ Examples/01-CoreAI-PlantDiseaseDetector/ios/
   - input image size: `320`
   - confidence threshold: `0.35`
   - IOU threshold: `0.45`
+  - raw Core AI outputs:
+    - `raw_boxes`
+    - `raw_scores`
+
+## Why Swift Owns Postprocessing
+
+- The Core AI asset emits raw detector tensors, not final detections.
+- This keeps thresholding, class selection, and any NMS policy transparent and adjustable inside the app.
+- The current Swift app still needs the real runtime/postprocessing implementation; until then it remains on mock fallback.
 
 ## What Is Still Needed Later
 
-- The converted `.aimodel` for iOS bundling.
+- Optional local bundling of the generated `.aimodel` for app testing.
 - Verified Core AI runtime loading/inference code once the SDK/API surface is confirmed.
 - Any Core AI-specific post-processing adjustments if the exported runtime output differs from the current JSON contract.
 

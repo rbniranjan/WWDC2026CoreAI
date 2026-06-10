@@ -14,6 +14,6 @@ This folder now contains the `PlantDiseaseDetectorApp` SwiftUI app foundation fo
 - `CoreAIPlantDiseaseDetector.swift` keeps the Core AI boundary compile-safe and isolated.
 - `MockPlantDiseaseDetector.swift` provides deterministic sample detections so the app can run before a real model is available.
 - `DetectionOverlayView.swift` renders normalized bounding boxes over the selected image preview.
-- The app currently uses the mock fallback path because no real `.aimodel` was generated locally.
+- A real raw-output `.aimodel` now exists under `models/core-ai/`, but the app still uses the mock fallback path until that asset is bundled locally and the runtime code is completed.
 - Real labels were copied into `Resources/Labels/plant_disease_labels.json`.
 - The generated model contract was copied into `Resources/ModelContract/model_contract.json`.
