@@ -6,7 +6,8 @@ This folder contains the `PlantDiseaseDetectorApp` SwiftUI app and the Swift-sid
 
 1. Open [PlantDiseaseDetectorApp.xcodeproj](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj).
 2. Set your Apple development team and preferred bundle identifier.
-3. If you want local app-side model testing, copy the locally generated `.aimodel` into `PlantDiseaseDetectorApp/Resources/AIModels/`.
+3. If you want local app-side model testing, sync the locally generated `.aimodel` with:
+   `../scripts/sync-local-aimodel.sh`
 4. Build only after verifying the actual Core AI runtime APIs available in your installed Xcode / SDK setup.
 
 ## Runtime Strategy
@@ -22,11 +23,21 @@ This folder contains the `PlantDiseaseDetectorApp` SwiftUI app and the Swift-sid
 - Real labels were copied into `Resources/Labels/plant_disease_labels.json`.
 - The generated model contract was copied into `Resources/ModelContract/model_contract.json`.
 
+## Local Model Sync
+
+- Generated `.aimodel` files are intentionally not committed.
+- The source asset is expected at:
+  `Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
+- Use the helper script to copy that local asset into the app bundle resources:
+  `Examples/01-CoreAI-PlantDiseaseDetector/scripts/sync-local-aimodel.sh`
+- If the source asset is missing, the script fails clearly and does not try to generate or download anything.
+- If the asset is absent from the app bundle, the app still compiles and runs with mock fallback behavior.
+
 ## Local Swift Verification
 
 - A small SwiftPM package was added in `PlantDiseaseDetectorApp/Package.swift`.
 - It exposes the pure-Swift detector core and allows local unit tests without modifying the Xcode app target layout.
 - The tests focus on raw tensor parsing, contract validation, and class-aware NMS behavior.
 - Run from `ios/PlantDiseaseDetectorApp/`:
-  `swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build`
+  `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build`
 - This requires a local Xcode CLI toolchain with the Apple license already accepted.

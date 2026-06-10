@@ -28,8 +28,10 @@ PlantDiseaseDetectorApp/
 
 1. Open `PlantDiseaseDetectorApp.xcodeproj`.
 2. Set your signing team and update `PRODUCT_BUNDLE_IDENTIFIER` if required.
-3. Run on a simulator or device with Photos access enabled.
-4. Select an image and tap `Run Detection`.
+3. If you want to exercise the real local Core AI asset, run:
+   `../scripts/sync-local-aimodel.sh`
+4. Run on a simulator or device with Photos access enabled.
+5. Select an image and tap `Run Detection`.
 
 ## Raw Detector Contract
 
@@ -64,6 +66,12 @@ Current locally generated asset:
 Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel
 ```
 
+Local sync helper:
+
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/scripts/sync-local-aimodel.sh
+```
+
 Labels are currently loaded from:
 
 ```text
@@ -80,7 +88,8 @@ PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json
 
 - Real Core AI model loading and inference are still TODO pending SDK verification.
 - The bundled label JSON now contains the verified real `38` class names from the validated YAML/model pair.
-- The generated `.aimodel` stays local/ignored and is not committed or bundled automatically.
+- The generated `.aimodel` stays local/ignored and is not committed.
+- The app resource copy of the `.aimodel` also stays local/ignored and should be created only through the helper sync script for local testing.
 - Postprocessing for raw Core AI outputs is implemented in Swift, but it is not exercised end-to-end until the verified runtime loader is added.
 - Xcode build success is not claimed unless separately verified in the local environment.
 
@@ -93,5 +102,5 @@ PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json
   - raw output to normalized detection conversion
   - class-aware NMS behavior
 - Run from this folder:
-  `swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build`
+  `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build`
 - This requires the local Xcode command line toolchain and accepted Apple SDK license terms.
