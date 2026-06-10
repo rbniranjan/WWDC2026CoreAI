@@ -22,6 +22,16 @@ Examples/01-CoreAI-PlantDiseaseDetector/models/raw/best.pt
 
 This file is intentionally not committed to Git.
 
+## Verified Local Status
+
+- `best.pt` was validated locally from `../models/raw/best.pt`.
+- The model and YAML each reported `38` classes.
+- The model class order matched `configs/full_plant_data.yaml` exactly.
+- TorchScript export succeeded to `../models/exported/best.torchscript`.
+- ONNX export succeeded to `../models/exported/best.onnx`.
+- Core AI conversion remained blocked because official Core AI Python tooling was not discoverable.
+- The generated iOS handoff package includes `model_contract.json` and the real `38`-class `plant_disease_labels.json`.
+
 ## Install Dependencies
 
 ```bash
@@ -63,6 +73,10 @@ python3 run_local_detection.py \
   --iou 0.45
 ```
 
+Current verification note:
+
+- No reasonable plant/leaf sample image was present in the repository, so local one-image detection was not run during this handoff pass.
+
 ## Export Intermediate Artifacts
 
 ```bash
@@ -100,12 +114,12 @@ python3 -m pytest tests
 
 ## Current Label Status
 
-- `configs/full_plant_data.yaml` is wired up for a 38-class dataset shape.
-- Exact class names were not confirmed from existing repo contents in this phase.
-- The YAML currently uses explicit placeholder labels and a TODO comment rather than invented disease names.
+- `configs/full_plant_data.yaml` contains the real `38` validated class names.
+- No placeholder label markers remain in the active YAML or generated handoff package.
 
 ## Phase Boundary
 
 - Full production-grade Ultralytics result parsing may still expand in later phases.
 - Core AI conversion only proceeds when official tooling is actually present and verified.
 - If official Core AI tooling is unavailable, `convert_to_core_ai.py` writes blocked metadata instead of faking success.
+- Generated export/conversion binaries remain local and ignored by Git unless intentionally distributed later outside the repository.

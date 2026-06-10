@@ -1,12 +1,157 @@
 {
-  "status": "placeholder_subset_unverified",
-  "todo": "Replace this placeholder subset with the Python/model agent's verified exported class map once the YOLO model contract is finalized.",
+  "classes_count": 38,
   "labels": [
-    { "id": 0, "name": "Apple___Apple_scab" },
-    { "id": 1, "name": "Apple___Black_rot" },
-    { "id": 2, "name": "Corn___Common_rust" },
-    { "id": 3, "name": "Grape___Black_rot" },
-    { "id": 4, "name": "Tomato___Late_blight" }
+    {
+      "class_id": 0,
+      "class_name": "Apple___Apple_scab"
+    },
+    {
+      "class_id": 1,
+      "class_name": "Apple___Black_rot"
+    },
+    {
+      "class_id": 2,
+      "class_name": "Apple___Cedar_apple_rust"
+    },
+    {
+      "class_id": 3,
+      "class_name": "Apple___healthy"
+    },
+    {
+      "class_id": 4,
+      "class_name": "Blueberry___healthy"
+    },
+    {
+      "class_id": 5,
+      "class_name": "Cherry___Powdery_mildew"
+    },
+    {
+      "class_id": 6,
+      "class_name": "Cherry___healthy"
+    },
+    {
+      "class_id": 7,
+      "class_name": "Corn___Cercospora_leaf_spot Gray_leaf_spot"
+    },
+    {
+      "class_id": 8,
+      "class_name": "Corn___Common_rust"
+    },
+    {
+      "class_id": 9,
+      "class_name": "Corn___Northern_Leaf_Blight"
+    },
+    {
+      "class_id": 10,
+      "class_name": "Corn___healthy"
+    },
+    {
+      "class_id": 11,
+      "class_name": "Grape___Black_rot"
+    },
+    {
+      "class_id": 12,
+      "class_name": "Grape___Esca_(Black_Measles)"
+    },
+    {
+      "class_id": 13,
+      "class_name": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)"
+    },
+    {
+      "class_id": 14,
+      "class_name": "Grape___healthy"
+    },
+    {
+      "class_id": 15,
+      "class_name": "Orange___Haunglongbing_(Citrus_greening)"
+    },
+    {
+      "class_id": 16,
+      "class_name": "Peach___Bacterial_spot"
+    },
+    {
+      "class_id": 17,
+      "class_name": "Peach___healthy"
+    },
+    {
+      "class_id": 18,
+      "class_name": "Pepper,_bell___Bacterial_spot"
+    },
+    {
+      "class_id": 19,
+      "class_name": "Pepper,_bell___healthy"
+    },
+    {
+      "class_id": 20,
+      "class_name": "Potato___Early_blight"
+    },
+    {
+      "class_id": 21,
+      "class_name": "Potato___Late_blight"
+    },
+    {
+      "class_id": 22,
+      "class_name": "Potato___healthy"
+    },
+    {
+      "class_id": 23,
+      "class_name": "Raspberry___healthy"
+    },
+    {
+      "class_id": 24,
+      "class_name": "Soybean___healthy"
+    },
+    {
+      "class_id": 25,
+      "class_name": "Squash___Powdery_mildew"
+    },
+    {
+      "class_id": 26,
+      "class_name": "Strawberry___Leaf_scorch"
+    },
+    {
+      "class_id": 27,
+      "class_name": "Strawberry___healthy"
+    },
+    {
+      "class_id": 28,
+      "class_name": "Tomato___Bacterial_spot"
+    },
+    {
+      "class_id": 29,
+      "class_name": "Tomato___Early_blight"
+    },
+    {
+      "class_id": 30,
+      "class_name": "Tomato___Late_blight"
+    },
+    {
+      "class_id": 31,
+      "class_name": "Tomato___Leaf_Mold"
+    },
+    {
+      "class_id": 32,
+      "class_name": "Tomato___Septoria_leaf_spot"
+    },
+    {
+      "class_id": 33,
+      "class_name": "Tomato___Spider_mites Two-spotted_spider_mite"
+    },
+    {
+      "class_id": 34,
+      "class_name": "Tomato___Target_Spot"
+    },
+    {
+      "class_id": 35,
+      "class_name": "Tomato___Tomato_Yellow_Leaf_Curl_Virus"
+    },
+    {
+      "class_id": 36,
+      "class_name": "Tomato___Tomato_mosaic_virus"
+    },
+    {
+      "class_id": 37,
+      "class_name": "Tomato___healthy"
+    }
   ]
 }
-

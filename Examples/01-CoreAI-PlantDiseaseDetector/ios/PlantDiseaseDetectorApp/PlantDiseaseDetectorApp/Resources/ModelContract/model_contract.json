@@ -1,0 +1,14 @@
+{
+  "model_name": "FarmerHelper_YOLO26_PlantDiseaseDetector",
+  "task": "object_detection",
+  "input_image_size": 320,
+  "classes_count": 38,
+  "confidence_threshold": 0.35,
+  "iou_threshold": 0.45,
+  "output_format": {
+    "bbox": "xyxy_pixels",
+    "class_id": "int",
+    "class_name": "string",
+    "confidence": "float"
+  }
+}

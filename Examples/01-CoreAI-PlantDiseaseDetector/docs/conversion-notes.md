@@ -4,6 +4,8 @@
 
 - Local YOLO checkpoint: `models/raw/best.pt`
 - This file is expected locally and is intentionally excluded from Git.
+- `best.pt` was validated locally in the project `.venv`.
+- The model exposes `38` classes, and that class order matched `configs/full_plant_data.yaml` exactly.
 
 ## Phase 1B-2 Scope
 
@@ -15,11 +17,21 @@
 - Core AI conversion is implemented only as a real-tooling gate: it writes blocked metadata when official tooling is not discoverable and does not fake `.aimodel` output.
 - iOS handoff package generation is implemented.
 
-## Planned Output Locations
+## Output Locations
 
 - Intermediate exports: `models/exported/`
 - Core AI-ready outputs: `models/core-ai/`
 - iOS handoff package: `models/ios-package/`
+
+## Verified Export Results
+
+- TorchScript export: success
+  Path: `models/exported/best.torchscript`
+- ONNX export: success
+  Path: `models/exported/best.onnx`
+- Export metadata: `models/exported/export_metadata.json`
+
+The export script now normalizes generated artifacts into `models/exported/` so large local binaries do not linger unignored in `models/raw/`.
 
 ## Exact Commands
 
@@ -34,13 +46,15 @@ python3 create_ios_model_package.py --data-yaml configs/full_plant_data.yaml --o
 
 ## Core AI Conversion Status
 
-- Current status: export/conversion scripts are in place, but actual runtime success depends on local model availability and Python dependencies.
+- Current status: blocked after real local export.
 - Exact Apple Core AI conversion APIs were not verified in this environment.
-- No claim is made that a final `.aimodel` was produced unless it actually exists in `models/core-ai/`.
+- Official Core AI Python tooling was not discoverable, so no `.aimodel` was generated.
+- Exact blocked reason is recorded in `models/core-ai/core_ai_conversion_metadata.json`.
+- Generated exports and conversion metadata remain local/ignored unless deliberately published later outside the Git repository.
 
 ## Exact TODOs Requiring Local Apple SDK Verification
 
-1. Verify the official Apple Core AI conversion/runtime APIs in the installed Xcode/SDK.
-2. Confirm the final label list against the real 38-class training data and `best.pt`.
-3. Replace the TODO runtime placeholder in `ios/PlantLeafClassifierApp/PlantLeafClassifierApp/CoreAIPlantDiseaseDetector.swift`.
-4. Confirm the expected model bundle format and output post-processing requirements for detections.
+1. Install or use Xcode 27 plus the official Core AI Python tooling when it becomes available locally.
+2. Re-run `convert_to_core_ai.py` once the verified conversion API path is known.
+3. Copy the resulting `.aimodel` into `ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/`.
+4. Replace the current mock-first runtime path with verified Core AI loading and inference behavior.

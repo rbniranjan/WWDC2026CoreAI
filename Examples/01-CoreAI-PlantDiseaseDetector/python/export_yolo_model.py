@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,19 @@ def discover_output_paths(before: set[Path], after_dir: Path) -> list[str]:
 def write_metadata(output_dir: Path, metadata: dict[str, Any]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "export_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+
+
+def normalize_export_path(path_str: str, output_dir: Path) -> str:
+    source_path = Path(path_str).resolve()
+    output_dir = output_dir.resolve()
+    if not source_path.exists() or source_path.parent == output_dir:
+        return str(source_path)
+
+    destination = output_dir / source_path.name
+    if destination.exists():
+        destination.unlink()
+    shutil.move(str(source_path), str(destination))
+    return str(destination.resolve())
 
 
 def main() -> int:
@@ -75,7 +89,7 @@ def main() -> int:
             export_result = model.export(format=format_name, imgsz=args.imgsz, nms=args.nms, project=str(output_dir), name="")
             created_paths = discover_output_paths(before, output_dir)
             if isinstance(export_result, str):
-                created_paths.append(str(Path(export_result).resolve()))
+                created_paths.append(normalize_export_path(export_result, output_dir))
             created_paths = sorted(set(created_paths))
             metadata["successful_outputs"].append({"format": format_name, "paths": created_paths})
             print(f"PASS: exported {format_name}")
@@ -90,4 +104,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
