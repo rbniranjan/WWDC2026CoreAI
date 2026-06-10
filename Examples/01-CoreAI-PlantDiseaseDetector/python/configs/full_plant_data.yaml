@@ -1,45 +1,43 @@
-# TODO: Replace these placeholder labels with the confirmed 38-class dataset names
-# used to fine-tune models/raw/best.pt. Exact names were not confirmed from current
-# repository contents in Phase 1B-1, so this file preserves index structure without
-# inventing a final disease-label list.
-nc: 38
 names:
-  0: TODO_confirm_class_00
-  1: TODO_confirm_class_01
-  2: TODO_confirm_class_02
-  3: TODO_confirm_class_03
-  4: TODO_confirm_class_04
-  5: TODO_confirm_class_05
-  6: TODO_confirm_class_06
-  7: TODO_confirm_class_07
-  8: TODO_confirm_class_08
-  9: TODO_confirm_class_09
-  10: TODO_confirm_class_10
-  11: TODO_confirm_class_11
-  12: TODO_confirm_class_12
-  13: TODO_confirm_class_13
-  14: TODO_confirm_class_14
-  15: TODO_confirm_class_15
-  16: TODO_confirm_class_16
-  17: TODO_confirm_class_17
-  18: TODO_confirm_class_18
-  19: TODO_confirm_class_19
-  20: TODO_confirm_class_20
-  21: TODO_confirm_class_21
-  22: TODO_confirm_class_22
-  23: TODO_confirm_class_23
-  24: TODO_confirm_class_24
-  25: TODO_confirm_class_25
-  26: TODO_confirm_class_26
-  27: TODO_confirm_class_27
-  28: TODO_confirm_class_28
-  29: TODO_confirm_class_29
-  30: TODO_confirm_class_30
-  31: TODO_confirm_class_31
-  32: TODO_confirm_class_32
-  33: TODO_confirm_class_33
-  34: TODO_confirm_class_34
-  35: TODO_confirm_class_35
-  36: TODO_confirm_class_36
-  37: TODO_confirm_class_37
-
+- Apple___Apple_scab
+- Apple___Black_rot
+- Apple___Cedar_apple_rust
+- Apple___healthy
+- Blueberry___healthy
+- Cherry___Powdery_mildew
+- Cherry___healthy
+- Corn___Cercospora_leaf_spot Gray_leaf_spot
+- Corn___Common_rust
+- Corn___Northern_Leaf_Blight
+- Corn___healthy
+- Grape___Black_rot
+- Grape___Esca_(Black_Measles)
+- Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+- Grape___healthy
+- Orange___Haunglongbing_(Citrus_greening)
+- Peach___Bacterial_spot
+- Peach___healthy
+- Pepper,_bell___Bacterial_spot
+- Pepper,_bell___healthy
+- Potato___Early_blight
+- Potato___Late_blight
+- Potato___healthy
+- Raspberry___healthy
+- Soybean___healthy
+- Squash___Powdery_mildew
+- Strawberry___Leaf_scorch
+- Strawberry___healthy
+- Tomato___Bacterial_spot
+- Tomato___Early_blight
+- Tomato___Late_blight
+- Tomato___Leaf_Mold
+- Tomato___Septoria_leaf_spot
+- Tomato___Spider_mites Two-spotted_spider_mite
+- Tomato___Target_Spot
+- Tomato___Tomato_Yellow_Leaf_Curl_Virus
+- Tomato___Tomato_mosaic_virus
+- Tomato___healthy
+nc: 38
+path: /kaggle/input/plantvillage-for-object-detection-yolo/PlantVillage_for_object_detection/Dataset
+train: images
+val: images
