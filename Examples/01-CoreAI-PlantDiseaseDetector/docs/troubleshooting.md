@@ -22,7 +22,7 @@
 
 ## iOS Model Asset Not Found
 
-- Add the verified converted model asset to `ios/PlantLeafClassifierApp/PlantLeafClassifierApp/Models/`.
+- Add the verified converted model asset to `ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/`.
 - Ensure the folder contents are included in the app target.
 
 ## Mock Fallback Behavior

@@ -1,0 +1,12 @@
+{
+  "status": "placeholder_subset_unverified",
+  "todo": "Replace this placeholder subset with the Python/model agent's verified exported class map once the YOLO model contract is finalized.",
+  "labels": [
+    { "id": 0, "name": "Apple___Apple_scab" },
+    { "id": 1, "name": "Apple___Black_rot" },
+    { "id": 2, "name": "Corn___Common_rust" },
+    { "id": 3, "name": "Grape___Black_rot" },
+    { "id": 4, "name": "Tomato___Late_blight" }
+  ]
+}
+
