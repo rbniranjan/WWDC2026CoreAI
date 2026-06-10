@@ -1,11 +1,10 @@
 import SwiftUI
 
 @main
-struct PlantLeafClassifierApp: App {
+struct PlantDiseaseDetectorApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
     }
 }
-

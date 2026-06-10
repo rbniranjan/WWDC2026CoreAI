@@ -1,0 +1,411 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000101 /* PlantDiseaseDetectorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000201 /* PlantDiseaseDetectorApp.swift */; };
+		A10000000000000000000102 /* PlantDiseaseDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000202 /* PlantDiseaseDetection.swift */; };
+		A10000000000000000000103 /* PlantDiseaseClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000203 /* PlantDiseaseClass.swift */; };
+		A10000000000000000000104 /* DetectionBoundingBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000204 /* DetectionBoundingBox.swift */; };
+		A10000000000000000000105 /* ModelRuntimeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000205 /* ModelRuntimeInfo.swift */; };
+		A10000000000000000000106 /* PlantDiseaseDetectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000206 /* PlantDiseaseDetectionViewModel.swift */; };
+		A10000000000000000000107 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000207 /* ContentView.swift */; };
+		A10000000000000000000108 /* ImageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000208 /* ImageSelectionView.swift */; };
+		A10000000000000000000109 /* DetectionResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000209 /* DetectionResultView.swift */; };
+		A1000000000000000000010A /* DetectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020A /* DetectionOverlayView.swift */; };
+		A1000000000000000000010B /* RuntimeStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020B /* RuntimeStatusView.swift */; };
+		A1000000000000000000010C /* PlantDiseaseDetectorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020C /* PlantDiseaseDetectorProtocol.swift */; };
+		A1000000000000000000010D /* CoreAIPlantDiseaseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020D /* CoreAIPlantDiseaseDetector.swift */; };
+		A1000000000000000000010E /* MockPlantDiseaseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020E /* MockPlantDiseaseDetector.swift */; };
+		A1000000000000000000010F /* DetectionPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000020F /* DetectionPostProcessor.swift */; };
+		A10000000000000000000110 /* ImagePreprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000210 /* ImagePreprocessor.swift */; };
+		A10000000000000000000111 /* BoundingBoxMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000211 /* BoundingBoxMapper.swift */; };
+		A10000000000000000000112 /* ModelResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000212 /* ModelResourceLoader.swift */; };
+		A10000000000000000000113 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000213 /* PrimaryButton.swift */; };
+		A10000000000000000000114 /* ConfidenceBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000214 /* ConfidenceBadge.swift */; };
+		A10000000000000000000115 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000215 /* EmptyStateView.swift */; };
+		A10000000000000000000116 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000216 /* Assets.xcassets */; };
+		A10000000000000000000117 /* Resources in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000217 /* Resources */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000000000000000000000A /* PlantDiseaseDetectorApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlantDiseaseDetectorApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000000000000000000B /* PlantDiseaseDetectorApp/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PlantDiseaseDetectorApp/Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000201 /* PlantDiseaseDetectorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDiseaseDetectorApp.swift; sourceTree = "<group>"; };
+		A10000000000000000000202 /* PlantDiseaseDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDiseaseDetection.swift; sourceTree = "<group>"; };
+		A10000000000000000000203 /* PlantDiseaseClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDiseaseClass.swift; sourceTree = "<group>"; };
+		A10000000000000000000204 /* DetectionBoundingBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionBoundingBox.swift; sourceTree = "<group>"; };
+		A10000000000000000000205 /* ModelRuntimeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelRuntimeInfo.swift; sourceTree = "<group>"; };
+		A10000000000000000000206 /* PlantDiseaseDetectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDiseaseDetectionViewModel.swift; sourceTree = "<group>"; };
+		A10000000000000000000207 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A10000000000000000000208 /* ImageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSelectionView.swift; sourceTree = "<group>"; };
+		A10000000000000000000209 /* DetectionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionResultView.swift; sourceTree = "<group>"; };
+		A1000000000000000000020A /* DetectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionOverlayView.swift; sourceTree = "<group>"; };
+		A1000000000000000000020B /* RuntimeStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeStatusView.swift; sourceTree = "<group>"; };
+		A1000000000000000000020C /* PlantDiseaseDetectorProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantDiseaseDetectorProtocol.swift; sourceTree = "<group>"; };
+		A1000000000000000000020D /* CoreAIPlantDiseaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPlantDiseaseDetector.swift; sourceTree = "<group>"; };
+		A1000000000000000000020E /* MockPlantDiseaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPlantDiseaseDetector.swift; sourceTree = "<group>"; };
+		A1000000000000000000020F /* DetectionPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionPostProcessor.swift; sourceTree = "<group>"; };
+		A10000000000000000000210 /* ImagePreprocessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreprocessor.swift; sourceTree = "<group>"; };
+		A10000000000000000000211 /* BoundingBoxMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundingBoxMapper.swift; sourceTree = "<group>"; };
+		A10000000000000000000212 /* ModelResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelResourceLoader.swift; sourceTree = "<group>"; };
+		A10000000000000000000213 /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
+		A10000000000000000000214 /* ConfidenceBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceBadge.swift; sourceTree = "<group>"; };
+		A10000000000000000000215 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A10000000000000000000216 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000217 /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1000000000000000000001A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000000000000000000009 = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000C /* PlantDiseaseDetectorApp */,
+				A1000000000000000000000D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000C /* PlantDiseaseDetectorApp */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000301 /* App */,
+				A10000000000000000000302 /* Models */,
+				A10000000000000000000303 /* ViewModels */,
+				A10000000000000000000304 /* Views */,
+				A10000000000000000000305 /* Services */,
+				A10000000000000000000306 /* Components */,
+				A10000000000000000000217 /* Resources */,
+				A10000000000000000000216 /* Assets.xcassets */,
+				A1000000000000000000000B /* PlantDiseaseDetectorApp/Info.plist */,
+			);
+			path = PlantDiseaseDetectorApp;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000A /* PlantDiseaseDetectorApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000301 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000201 /* PlantDiseaseDetectorApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000302 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000202 /* PlantDiseaseDetection.swift */,
+				A10000000000000000000203 /* PlantDiseaseClass.swift */,
+				A10000000000000000000204 /* DetectionBoundingBox.swift */,
+				A10000000000000000000205 /* ModelRuntimeInfo.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000303 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000206 /* PlantDiseaseDetectionViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000304 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000207 /* ContentView.swift */,
+				A10000000000000000000208 /* ImageSelectionView.swift */,
+				A10000000000000000000209 /* DetectionResultView.swift */,
+				A1000000000000000000020A /* DetectionOverlayView.swift */,
+				A1000000000000000000020B /* RuntimeStatusView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000305 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000307 /* Inference */,
+				A10000000000000000000308 /* ImageProcessing */,
+				A10000000000000000000309 /* Resources */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000306 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000213 /* PrimaryButton.swift */,
+				A10000000000000000000214 /* ConfidenceBadge.swift */,
+				A10000000000000000000215 /* EmptyStateView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000307 /* Inference */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000020C /* PlantDiseaseDetectorProtocol.swift */,
+				A1000000000000000000020D /* CoreAIPlantDiseaseDetector.swift */,
+				A1000000000000000000020E /* MockPlantDiseaseDetector.swift */,
+				A1000000000000000000020F /* DetectionPostProcessor.swift */,
+			);
+			path = Inference;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000308 /* ImageProcessing */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000210 /* ImagePreprocessor.swift */,
+				A10000000000000000000211 /* BoundingBoxMapper.swift */,
+			);
+			path = ImageProcessing;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000309 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000212 /* ModelResourceLoader.swift */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000000000000000000000E /* PlantDiseaseDetectorApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000022 /* Build configuration list for PBXNativeTarget "PlantDiseaseDetectorApp" */;
+			buildPhases = (
+				A10000000000000000000019 /* Sources */,
+				A1000000000000000000001A /* Frameworks */,
+				A1000000000000000000001B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PlantDiseaseDetectorApp;
+			packageProductDependencies = (
+			);
+			productName = PlantDiseaseDetectorApp;
+			productReference = A1000000000000000000000A /* PlantDiseaseDetectorApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1000000000000000000000F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					A1000000000000000000000E = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = A1000000000000000000001F /* Build configuration list for PBXProject "PlantDiseaseDetectorApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000000000000000000009;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A1000000000000000000000D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000000000000000000000E /* PlantDiseaseDetectorApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1000000000000000000001B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000116 /* Assets.xcassets in Resources */,
+				A10000000000000000000117 /* Resources in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000000000000000000019 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000101 /* PlantDiseaseDetectorApp.swift in Sources */,
+				A10000000000000000000102 /* PlantDiseaseDetection.swift in Sources */,
+				A10000000000000000000103 /* PlantDiseaseClass.swift in Sources */,
+				A10000000000000000000104 /* DetectionBoundingBox.swift in Sources */,
+				A10000000000000000000105 /* ModelRuntimeInfo.swift in Sources */,
+				A10000000000000000000106 /* PlantDiseaseDetectionViewModel.swift in Sources */,
+				A10000000000000000000107 /* ContentView.swift in Sources */,
+				A10000000000000000000108 /* ImageSelectionView.swift in Sources */,
+				A10000000000000000000109 /* DetectionResultView.swift in Sources */,
+				A1000000000000000000010A /* DetectionOverlayView.swift in Sources */,
+				A1000000000000000000010B /* RuntimeStatusView.swift in Sources */,
+				A1000000000000000000010C /* PlantDiseaseDetectorProtocol.swift in Sources */,
+				A1000000000000000000010D /* CoreAIPlantDiseaseDetector.swift in Sources */,
+				A1000000000000000000010E /* MockPlantDiseaseDetector.swift in Sources */,
+				A1000000000000000000010F /* DetectionPostProcessor.swift in Sources */,
+				A10000000000000000000110 /* ImagePreprocessor.swift in Sources */,
+				A10000000000000000000111 /* BoundingBoxMapper.swift in Sources */,
+				A10000000000000000000112 /* ModelResourceLoader.swift in Sources */,
+				A10000000000000000000113 /* PrimaryButton.swift in Sources */,
+				A10000000000000000000114 /* ConfidenceBadge.swift in Sources */,
+				A10000000000000000000115 /* EmptyStateView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10000000000000000000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PlantDiseaseDetectorApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.PlantDiseaseDetectorApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A10000000000000000000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PlantDiseaseDetectorApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.PlantDiseaseDetectorApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A10000000000000000000023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10000000000000000000024 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1000000000000000000001F /* Build configuration list for PBXProject "PlantDiseaseDetectorApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000023 /* Debug */,
+				A10000000000000000000024 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000022 /* Build configuration list for PBXNativeTarget "PlantDiseaseDetectorApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000020 /* Debug */,
+				A10000000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1000000000000000000000F /* Project object */;
+}
