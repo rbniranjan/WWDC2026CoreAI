@@ -1,103 +1,99 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import torch
+from pipeline_config import DEFAULT_CORE_AI_DIR, DEFAULT_DATA_YAML, DEFAULT_MODEL_PATH, resolve_path
 
-from leaf_classifier_model import build_model
+
+CORE_AI_CANDIDATE_MODULES = [
+    "core_ai",
+    "coreai",
+    "core_ai_torch",
+    "apple_core_ai",
+    "apple_coreai",
+]
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Prepare Apple-side model conversion artifacts.")
-    parser.add_argument("--model-path", type=Path, required=True, help="Path to the PyTorch checkpoint.")
-    parser.add_argument(
-        "--class-mapping-path",
-        type=Path,
-        default=None,
-        help="Optional class mapping path. Defaults to the checkpoint directory's class_mapping.json.",
-    )
-    parser.add_argument("--output-dir", type=Path, required=True, help="Directory for converted outputs.")
+    parser = argparse.ArgumentParser(description="Attempt Core AI model conversion if official tooling is available.")
+    parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH, help="Path to best.pt")
+    parser.add_argument("--exported-model-path", type=Path, default=None, help="Path to a TorchScript/ONNX export")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_CORE_AI_DIR, help="Directory for Core AI outputs")
+    parser.add_argument("--data-yaml", type=Path, default=DEFAULT_DATA_YAML, help="Dataset YAML path")
+    parser.add_argument("--imgsz", type=int, default=320, help="Input image size")
     return parser.parse_args()
 
 
-def export_torchscript(checkpoint: dict[str, Any], output_dir: Path) -> Path:
-    image_size = int(checkpoint.get("image_size", 224))
-    model = build_model(image_size=image_size)
-    model.load_state_dict(checkpoint["state_dict"])
-    model.eval()
-
-    example_input = torch.randn(1, 3, image_size, image_size)
-    scripted = torch.jit.trace(model, example_input)
-    output_path = output_dir / "leaf_classifier_torchscript.pt"
-    scripted.save(str(output_path))
-    return output_path
+def discover_core_ai_modules() -> list[str]:
+    return [name for name in CORE_AI_CANDIDATE_MODULES if importlib.util.find_spec(name) is not None]
 
 
-def try_export_coreml(output_dir: Path, scripted_model_path: Path, image_size: int) -> tuple[bool, str]:
-    if importlib.util.find_spec("coremltools") is None:
-        return False, "coremltools is not installed in this environment."
-
-    import coremltools as ct  # type: ignore
-
-    mlmodel = ct.convert(
-        str(scripted_model_path),
-        convert_to="mlprogram",
-        inputs=[ct.ImageType(name="image", shape=(1, 3, image_size, image_size))],
-    )
-    output_path = output_dir / "leaf_classifier.mlpackage"
-    mlmodel.save(str(output_path))
-    return True, f"Saved Core ML package to {output_path}"
+def default_exported_model_path() -> Path | None:
+    candidates = [
+        DEFAULT_CORE_AI_DIR.parent / "exported" / "best.torchscript",
+        DEFAULT_CORE_AI_DIR.parent / "exported" / "best.onnx",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path.resolve()
+    return None
 
 
-def main() -> None:
+def write_metadata(output_dir: Path, metadata: dict[str, Any]) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    metadata_path = output_dir / "core_ai_conversion_metadata.json"
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    return metadata_path
+
+
+def main() -> int:
     args = parse_args()
-    if not args.model_path.exists():
-        raise FileNotFoundError(f"Model checkpoint not found: {args.model_path}")
+    model_path = resolve_path(args.model_path)
+    exported_model_path = resolve_path(args.exported_model_path) if args.exported_model_path else default_exported_model_path()
+    output_dir = resolve_path(args.output_dir)
+    data_yaml_path = resolve_path(args.data_yaml)
+    discovered_modules = discover_core_ai_modules()
 
-    class_mapping_path = args.class_mapping_path or args.model_path.parent / "class_mapping.json"
-    if not class_mapping_path.exists():
-        raise FileNotFoundError(f"Class mapping not found: {class_mapping_path}")
-
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-    checkpoint = torch.load(args.model_path, map_location="cpu")
-    class_mapping = json.loads(class_mapping_path.read_text(encoding="utf-8"))
-    image_size = int(checkpoint.get("image_size", 224))
-
-    scripted_path = export_torchscript(checkpoint, args.output_dir)
-    print(f"Exported TorchScript artifact: {scripted_path}")
-
-    # TODO(Core AI SDK verification):
-    # Replace this adapter with the official Apple Core AI conversion API once
-    # Xcode 27/Core AI Python tooling is available in the local environment.
-    coreml_exported, message = try_export_coreml(args.output_dir, scripted_path, image_size)
-    print(message)
-
-    report = {
-        "input_checkpoint": str(args.model_path),
-        "class_mapping_path": str(class_mapping_path),
-        "class_mapping": class_mapping,
-        "image_size": image_size,
-        "torchscript_output": str(scripted_path),
-        "coreml_exported": coreml_exported,
-        "notes": [
-            "This script did not verify Apple Core AI SDK-specific conversion APIs locally.",
-            "Place the verified Apple-side model asset into ios/PlantLeafClassifierApp/PlantLeafClassifierApp/Models/ after conversion.",
-        ],
-        "next_steps_if_core_ai_sdk_missing": [
-            "Install or verify the official Apple Core AI conversion tooling when available.",
-            "Re-run this script after replacing the TODO adapter with the verified API path.",
-            "Add the resulting model asset to the iOS Models/ folder and update the runtime loader.",
-        ],
+    metadata: dict[str, Any] = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "status": "blocked",
+        "reason": "Official Core AI PyTorch Extensions not installed or not discoverable in this environment",
+        "model_path": str(model_path),
+        "exported_model_path": str(exported_model_path) if exported_model_path else None,
+        "data_yaml": str(data_yaml_path),
+        "imgsz": args.imgsz,
+        "discovered_core_ai_modules": discovered_modules,
+        "generated_aimodel": None,
     }
-    report_path = args.output_dir / "conversion_report.json"
-    report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote conversion report: {report_path}")
+
+    if discovered_modules:
+        metadata["reason"] = (
+            "Candidate Core AI-related modules were discovered, but no verified conversion API is implemented in this "
+            "repository yet. Manual SDK verification is still required."
+        )
+        try:
+            for module_name in discovered_modules:
+                importlib.import_module(module_name)
+        except Exception as error:
+            metadata["reason"] += f" Import attempt failed: {error}"
+
+    metadata_path = write_metadata(output_dir, metadata)
+    print(f"Wrote conversion metadata: {metadata_path}")
+    print("Core AI conversion blocked.")
+    print("Next steps:")
+    print("1. Install or use Xcode 27 with the official Core AI Python tooling.")
+    print("2. Verify the actual Core AI conversion API surface locally.")
+    print("3. Re-run this script after wiring the verified conversion path.")
+    print("4. Place the final .aimodel into models/core-ai/ for iOS handoff.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
 

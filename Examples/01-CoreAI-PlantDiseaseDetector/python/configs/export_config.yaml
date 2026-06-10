@@ -1,0 +1,7 @@
+model_name: FarmerHelper_YOLO26_PlantDiseaseDetector
+task: object_detection
+input_image_size: 320
+confidence_threshold: 0.35
+iou_threshold: 0.45
+expected_model_path: ../models/raw/best.pt
+
