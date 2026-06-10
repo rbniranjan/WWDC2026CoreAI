@@ -1,106 +1,119 @@
 # PlantDiseaseDetectorApp
 
-SwiftUI iOS app foundation for the Core AI plant disease object detector, including the Swift-side raw YOLO postprocessing path.
+SwiftUI iOS app foundation for the Core AI plant disease object detector, including the Swift-side raw YOLO postprocessing path and local-only model sync workflow.
 
-## App Purpose
+## What The App Does
 
-- Select a photo from the user's library.
-- Preview the image with detection overlays.
-- Run detection through a Core AI placeholder boundary with mock fallback behavior.
-- Display runtime mode, detections, confidence, and bounding box summaries.
-- Keep model-specific postprocessing inside Swift instead of baking it into the Core AI asset.
+- lets the user pick a photo
+- renders detection overlays
+- tries the Core AI detector path first
+- falls back to deterministic mock detections if no local model is bundled
+- displays runtime status, detection labels, confidence, and bounding box summaries
 
-## App Structure
+## Architecture
 
 ```text
-PlantDiseaseDetectorApp/
-├── App/
-├── Models/
-├── ViewModels/
-├── Views/
-├── Services/
-├── Components/
-├── Resources/
-└── Assets.xcassets/
+FarmerHelper_YOLO26_RawDetector.aimodel
+-> raw_boxes [1, 4, 2100]
+-> raw_scores [1, 38, 2100]
+-> DetectionPostProcessor.swift
+-> PlantDiseaseDetection values
+-> DetectionOverlayView.swift
 ```
-
-## Run Instructions
-
-1. Open `PlantDiseaseDetectorApp.xcodeproj`.
-2. Set your signing team and update `PRODUCT_BUNDLE_IDENTIFIER` if required.
-3. If you want to exercise the real local Core AI asset, run:
-   `../scripts/sync-local-aimodel.sh`
-4. Run on a simulator or device with Photos access enabled.
-5. Select an image and tap `Run Detection`.
 
 ## Raw Detector Contract
 
-- Bundled labels: `PlantDiseaseDetectorApp/Resources/Labels/plant_disease_labels.json`
-- Bundled model contract: `PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json`
-- Expected Core AI entrypoint: `detect_raw`
-- Expected input tensor: `image` `[1, 3, 320, 320]`
-- Expected outputs:
+- input tensor: `image` `[1, 3, 320, 320]`
+- layout: `NCHW`
+- dtype: `float32`
+- outputs:
   - `raw_boxes` `[1, 4, 2100]`
   - `raw_scores` `[1, 38, 2100]`
+- classes: `38`
+- confidence threshold: `0.35`
+- IoU threshold: `0.45`
 
-`DetectionPostProcessor.swift` is the app-side adapter for these outputs. It validates class count/order, selects the best class per anchor, converts `xyxy` model-space pixels into normalized `CGRect` values, then applies class-aware NMS using the bundled thresholds.
+`DetectionPostProcessor.swift` handles:
 
-## Mock Detector Behavior
+- label count and order validation
+- best-class selection per anchor
+- confidence thresholding
+- `xyxy` pixel to normalized `CGRect` conversion
+- class-aware non-maximum suppression
 
-- The app attempts the Core AI detector path first in automatic mode.
-- If no model asset is present, the mock detector returns deterministic sample detections.
-- The runtime panel clearly reports `Mock fallback` when that path is active.
-- That mock fallback remains the active local behavior unless the generated raw-output `.aimodel` is copied into the app bundle and the runtime loader is completed.
+## Why Raw Outputs Are Used
 
-## Model Placement
+The conversion flow intentionally disables YOLO end-to-end postprocessing because direct end-to-end conversion hit an unsupported `aten.remainder.Scalar` path. That keeps postprocessing transparent and adjustable on the iOS side.
 
-Place future converted detector assets here:
+## Local Model Sync
 
-```text
-PlantDiseaseDetectorApp/Resources/AIModels/
-```
-
-Current locally generated asset:
+Generated source model:
 
 ```text
 Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel
 ```
 
-Local sync helper:
+App resource destination:
+
+```text
+PlantDiseaseDetectorApp/Resources/AIModels/FarmerHelper_YOLO26_RawDetector.aimodel
+```
+
+Sync helper:
 
 ```text
 Examples/01-CoreAI-PlantDiseaseDetector/scripts/sync-local-aimodel.sh
 ```
 
-Labels are currently loaded from:
+That copied app-resource `.aimodel` remains ignored and local-only.
 
-```text
-PlantDiseaseDetectorApp/Resources/Labels/plant_disease_labels.json
+## Model Artifacts
+
+The generated `.aimodel` is intentionally not committed. The same local-only policy applies to the trained `best.pt` model and generated conversion metadata.
+
+If another developer needs the trained `best.pt` model or generated `.aimodel` for testing or review, they should open a GitHub issue, leave a comment on the repository, or contact the repository owner by email if a contact address is available.
+
+## Run Instructions
+
+1. Open `PlantDiseaseDetectorApp.xcodeproj`.
+2. Set your signing team and update `PRODUCT_BUNDLE_IDENTIFIER` if required.
+3. If you want to test the local model path, run `../scripts/sync-local-aimodel.sh`.
+4. Run on a simulator or device with Photos access enabled.
+5. Select an image and tap `Run Detection`.
+
+## Xcode Beta Verification
+
+Use inline `DEVELOPER_DIR`. Do not change the system default Xcode.
+
+Verified local beta path on the author machine:
+
+```bash
+export BETA_DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer"
 ```
 
-The generated model contract is currently loaded from:
+Other developers should replace that path with their own Xcode beta path.
 
-```text
-PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json
+Commands:
+
+```bash
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build
+
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild \
+  -project PlantDiseaseDetectorApp.xcodeproj \
+  -scheme PlantDiseaseDetectorApp \
+  -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /tmp/plant-disease-detector-derived-data \
+  build
 ```
 
-## Known Limitations
+Verified result:
 
-- Real Core AI model loading and inference are still TODO pending SDK verification.
-- The bundled label JSON now contains the verified real `38` class names from the validated YAML/model pair.
-- The generated `.aimodel` stays local/ignored and is not committed.
-- The app resource copy of the `.aimodel` also stays local/ignored and should be created only through the helper sync script for local testing.
-- Postprocessing for raw Core AI outputs is implemented in Swift, but it is not exercised end-to-end until the verified runtime loader is added.
-- Xcode build success is not claimed unless separately verified in the local environment.
+- SwiftPM tests: `4 tests, 0 failures`
+- Xcode build: `BUILD SUCCEEDED`
 
-## Local Core Tests
+## What Is Not Included Yet
 
-- `Package.swift` exposes the pure-Swift detector core to SwiftPM.
-- The local tests cover:
-  - raw tensor shape validation
-  - label order validation
-  - raw output to normalized detection conversion
-  - class-aware NMS behavior
-- Run from this folder:
-  `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build`
-- This requires the local Xcode command line toolchain and accepted Apple SDK license terms.
+- final production Core AI runtime API wiring beyond the current placeholder boundary
+- committed model artifacts
+- cloud download flow for model files

@@ -1,21 +1,65 @@
 # Conversion Notes
 
+## Overview
+
+The Python conversion flow takes a locally available YOLO checkpoint and produces a local-only Apple Core AI raw detector asset for the iOS app.
+
+Architecture:
+
+```text
+best.pt
+-> convert_to_core_ai.py
+-> FarmerHelper_YOLO26_RawDetector.aimodel
+-> raw_boxes [1, 4, 2100]
+-> raw_scores [1, 38, 2100]
+-> DetectionPostProcessor.swift
+-> final detections
+-> iOS UI overlay
+```
+
 ## Intended Source Model
 
 - Local YOLO checkpoint: `models/raw/best.pt`
-- This file is expected locally and is intentionally excluded from Git.
-- `best.pt` was validated locally in the project `.venv`.
-- The model exposes `38` classes, and that class order matched `configs/full_plant_data.yaml` exactly.
+- This file is intentionally excluded from Git.
+- The model exposes `38` classes.
+- The model class order matched `configs/full_plant_data.yaml` exactly during verification.
 
-## Phase 1B-2 Scope
+## Why Raw Outputs Are Used
 
-- Environment validation is implemented.
-- YAML label loading/validation is implemented.
-- YOLO checkpoint inspection is implemented.
-- Local detection JSON export is implemented.
-- Intermediate export scripting for TorchScript/ONNX is implemented.
-- Core AI conversion is implemented via `torch.export` plus `coreai_torch`.
-- iOS handoff package generation is implemented.
+Direct postprocessed YOLO conversion ran into an unsupported `aten.remainder.Scalar` path. The verified workaround is to disable YOLO end-to-end postprocessing before export and convert only the raw detector outputs.
+
+That means the Core AI asset emits:
+
+- `raw_boxes`
+- `raw_scores`
+
+And Swift owns:
+
+- class winner selection
+- confidence thresholding
+- `xyxy` pixel to normalized `CGRect` conversion
+- class-aware NMS
+
+## Verified Output Contract
+
+Input:
+
+- `image`
+- shape: `[1, 3, 320, 320]`
+- layout: `NCHW`
+- dtype: `float32`
+
+Outputs:
+
+- `raw_boxes`: `[1, 4, 2100]`
+- `raw_scores`: `[1, 38, 2100]`
+
+Class / threshold defaults:
+
+- class count: `38`
+- confidence threshold: `0.35`
+- IoU threshold: `0.45`
+- runtime entrypoint: `detect_raw`
 
 ## Output Locations
 
@@ -23,60 +67,52 @@
 - Core AI-ready outputs: `models/core-ai/`
 - iOS handoff package: `models/ios-package/`
 
-## Verified Export Results
+## Reproducing The Local Conversion
 
-- TorchScript export: success
-  Path: `models/exported/best.torchscript`
-- ONNX export: success
-  Path: `models/exported/best.onnx`
-- Export metadata: `models/exported/export_metadata.json`
-- Core AI raw-output asset: success
-  Path: `models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
-- Core AI conversion metadata: `models/core-ai/core_ai_conversion_metadata.json`
+From `Examples/01-CoreAI-PlantDiseaseDetector/python`:
 
-The export script now normalizes generated artifacts into `models/exported/` so large local binaries do not linger unignored in `models/raw/`.
+```bash
+.venv/bin/python -m pytest tests
+.venv/bin/python -m py_compile *.py
 
-## Why The Core AI Asset Uses Raw Outputs
+MPLCONFIGDIR=/tmp/mpl .venv-coreai/bin/python convert_to_core_ai.py \
+  --model-path ../models/raw/best.pt \
+  --output-dir ../models/core-ai \
+  --data-yaml configs/full_plant_data.yaml \
+  --imgsz 320 \
+  --overwrite
+```
 
-- The Core AI conversion wraps the detector and exports only `raw_boxes` and `raw_scores`.
-- This avoids baking confidence filtering, class mapping, and NMS decisions into the asset conversion step.
-- The Swift app now owns postprocessing through `DetectionPostProcessor.swift`, so thresholds, label presentation, and overlay logic remain explicit and debuggable on-device.
+Expected local outputs:
+
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel
+Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/core_ai_conversion_metadata.json
+```
 
 ## Repeatable Conversion Runs
 
 - `convert_to_core_ai.py` computes the target asset path before conversion starts.
-- If `models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel` already exists, the script fails early by default and writes failure metadata.
-- Use `--overwrite` to delete and replace only that exact asset path.
+- If `FarmerHelper_YOLO26_RawDetector.aimodel` already exists, the script fails early by default.
+- Use `--overwrite` to replace only that exact asset path.
 - The script never deletes the whole `models/core-ai/` directory.
 
-## Exact Commands
+## Model Artifacts
 
-```bash
-cd Examples/01-CoreAI-PlantDiseaseDetector/python
-python3 validate_environment.py
-python3 inspect_yolo_model.py --model-path ../models/raw/best.pt --data-yaml configs/full_plant_data.yaml
-python3 export_yolo_model.py --model-path ../models/raw/best.pt --output-dir ../models/exported --formats torchscript,onnx --imgsz 320
-.venv-coreai/bin/python convert_to_core_ai.py --model-path ../models/raw/best.pt --output-dir ../models/core-ai --data-yaml configs/full_plant_data.yaml --imgsz 320 --overwrite
-python3 create_ios_model_package.py --data-yaml configs/full_plant_data.yaml --output-dir ../models/ios-package --core-ai-dir ../models/core-ai
-```
+The trained YOLO `.pt` model, generated Core AI `.aimodel`, and generated conversion metadata are intentionally not committed to Git. These files are large generated artifacts and remain local-only.
 
-## Core AI Conversion Status
+If another developer needs `best.pt` or `FarmerHelper_YOLO26_RawDetector.aimodel` for testing or review, they should open a GitHub issue, leave a comment on the repository, or contact the repository owner by email if a contact address is provided on the repository or GitHub profile.
 
-- Current status: successful local raw-output `.aimodel` generation.
-- Verified local toolchain:
-  - `torch 2.11.0`
-  - `coreai_torch 0.4.0`
-- Output names:
-  - `raw_boxes`
-  - `raw_scores`
-- Output shapes from conversion metadata:
-  - `[1, 4, 2100]`
-  - `[1, 38, 2100]`
-- Generated exports and conversion metadata remain local/ignored unless deliberately published later outside the Git repository.
+## Current Verified Status
 
-## Exact TODOs Requiring Local Apple SDK Verification
+- YOLO checkpoint inspection: implemented and verified
+- YAML label validation: implemented and verified
+- TorchScript / ONNX export: implemented and verified
+- Core AI raw detector conversion: implemented and verified
+- iOS handoff package generation: implemented and verified
 
-1. Copy the resulting `.aimodel` into `ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/` when you want to bundle it locally for app testing.
-2. Replace the current placeholder runtime path with verified Core AI loading and inference behavior.
-3. Verify that the runtime emits `raw_boxes` and `raw_scores` exactly as described by the handoff contract.
-4. Verify the Xcode-side app integration path end to end.
+## Not Included
+
+- Model artifacts in Git
+- Cloud download flow for `best.pt` or `.aimodel`
+- Final production Core AI runtime wiring inside the app

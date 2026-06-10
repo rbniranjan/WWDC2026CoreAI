@@ -1,76 +1,139 @@
 # iOS Integration Notes
 
-## Folder Structure
+## Overview
+
+The iOS side of this example is a SwiftUI inspection app plus a pure-Swift raw detector postprocessing layer. The Core AI runtime boundary remains compile-safe and intentionally avoids unverified Apple APIs.
+
+Architecture:
 
 ```text
-Examples/01-CoreAI-PlantDiseaseDetector/ios/
-└── PlantDiseaseDetectorApp/
-    ├── README.md
-    ├── PlantDiseaseDetectorApp.xcodeproj/
-    └── PlantDiseaseDetectorApp/
-        ├── App/
-        ├── Models/
-        ├── ViewModels/
-        ├── Views/
-        ├── Services/
-        ├── Components/
-        ├── Resources/
-        └── Assets.xcassets/
+FarmerHelper_YOLO26_RawDetector.aimodel
+-> raw_boxes [1, 4, 2100]
+-> raw_scores [1, 38, 2100]
+-> DetectionPostProcessor.swift
+-> PlantDiseaseDetection values
+-> DetectionOverlayView.swift / result UI
 ```
 
-## Mock Mode
+## What Is Implemented
 
-- The app prefers `CoreAIPlantDiseaseDetector` first when detection runs.
-- If no real model asset is present, the app falls back to `MockPlantDiseaseDetector`.
-- The mock detector returns deterministic sample detections and uses normalized bounding boxes so the overlay UI is demonstrable immediately.
-- Today the app remains in this mock-fallback path unless you explicitly copy the generated `.aimodel` into the app bundle and wire up the runtime integration.
+- `PlantDiseaseDetectorApp` SwiftUI app scaffold
+- image selection flow
+- runtime status panel
+- mock fallback detector
+- raw detector contract documentation
+- `DetectionPostProcessor.swift` raw tensor parsing
+- class-aware NMS in Swift
+- local-only `.aimodel` sync workflow
+- Xcode beta build verification
+
+## What Is Not Included Yet
+
+- Production Core AI runtime loading/inference API wiring beyond the current placeholder boundary
+- Committed model artifacts
+- Cloud-hosted model download flow
+
+## Mock And Real Model Modes
+
+- The app prefers `CoreAIPlantDiseaseDetector` first.
+- If no local `.aimodel` is bundled, it falls back to `MockPlantDiseaseDetector`.
+- The mock detector returns deterministic sample detections so the overlay UI remains demonstrable.
+- The real runtime path is still intentionally behind a compile-safe placeholder until Apple Core AI runtime APIs are finalized and verified locally.
 
 ## Model Placement
 
-- Future converted Apple-side detector assets should be copied into:
-  `Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/`
-- `CoreAIPlantDiseaseDetector.swift` only verifies model presence today. It does not contain unverified Core AI runtime calls.
-- A local Core AI raw-output model was generated at:
-  `Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
-- It is not auto-copied into the app bundle and is intentionally not committed.
+Local app-resource model path:
 
-## Labels
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/FarmerHelper_YOLO26_RawDetector.aimodel
+```
 
-- Labels are loaded from:
-  `Resources/Labels/plant_disease_labels.json`
-- The current JSON was copied from the generated iOS handoff package and contains the verified `38` class names from the validated YAML/model pair.
+Local generated source model path:
 
-## Model Contract
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel
+```
 
-- The generated handoff contract was copied to:
-  `Resources/ModelContract/model_contract.json`
-- Current contract values:
-  - input tensor: `image` `[1, 3, 320, 320]`
-  - confidence threshold: `0.35`
-  - IOU threshold: `0.45`
-  - raw Core AI outputs:
-    - `raw_boxes` `[1, 4, 2100]`
-    - `raw_scores` `[1, 38, 2100]`
+Use the sync helper:
+
+```text
+Examples/01-CoreAI-PlantDiseaseDetector/scripts/sync-local-aimodel.sh
+```
+
+That copied app-resource `.aimodel` remains ignored and local-only.
+
+## Raw Detector Contract
+
+Input:
+
+- `image` `[1, 3, 320, 320]`
+- `NCHW`
+- `float32`
+
+Outputs:
+
+- `raw_boxes` `[1, 4, 2100]`
+- `raw_scores` `[1, 38, 2100]`
+
+Class / threshold defaults:
+
+- classes: `38`
+- confidence threshold: `0.35`
+- IoU threshold: `0.45`
 
 ## Why Swift Owns Postprocessing
 
-- The Core AI asset emits raw detector tensors, not final detections.
-- This keeps thresholding, class selection, and any NMS policy transparent and adjustable inside the app.
-- `DetectionPostProcessor.swift` now implements:
-  - class-count and label-order validation
-  - best-class selection per anchor
-  - XYXY pixel to normalized `CGRect` conversion
-  - class-aware non-maximum suppression
-- The app still needs the verified Apple runtime loader/inference call; until then it remains on mock fallback.
+The Core AI asset does not emit final postprocessed detections. That is intentional.
 
-## What Is Still Needed Later
+Direct end-to-end YOLO postprocessing conversion hit an unsupported `aten.remainder.Scalar` path, so the conversion flow disables YOLO end-to-end export behavior and keeps postprocessing in Swift.
 
-- Optional local bundling of the generated `.aimodel` for app testing.
-- Verified Core AI runtime loading/inference code once the SDK/API surface is confirmed.
-- Any Core AI-specific output adaptation only if the verified runtime tensors differ from the current JSON contract.
+`DetectionPostProcessor.swift` now owns:
 
-## TODO Pending Xcode 27 / Core AI SDK Verification
+- label count and order validation
+- best-class selection per anchor
+- confidence thresholding
+- `xyxy` pixel to normalized `CGRect` conversion
+- class-aware non-maximum suppression
 
-- Replace the placeholder error path in `CoreAIPlantDiseaseDetector.swift` with the verified runtime loader and inference call that returns `raw_boxes` and `raw_scores`.
-- Confirm the final model bundle/runtime invocation format expected by Core AI.
-- Verify the Xcode project builds cleanly once the local Xcode license and SDK environment are available.
+## Xcode Beta Verification
+
+The iOS app was verified with Xcode beta using inline `DEVELOPER_DIR`. The system default Xcode was not changed.
+
+Verified local beta path on the author machine:
+
+```bash
+export BETA_DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer"
+```
+
+Other developers should replace that path with their own Xcode beta install path.
+
+Verification commands:
+
+```bash
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild -version
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcrun swift --version
+
+cd Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp
+
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build
+
+DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild \
+  -project PlantDiseaseDetectorApp.xcodeproj \
+  -scheme PlantDiseaseDetectorApp \
+  -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /tmp/plant-disease-detector-derived-data \
+  build
+```
+
+Latest verified result:
+
+- `Xcode 27.0`
+- `Build version 27A5194q`
+- `Swift 6.4`
+- SwiftPM tests: `4 tests, 0 failures`
+- Xcode build: `BUILD SUCCEEDED`
+
+## Model Artifacts
+
+The generated `.aimodel` is intentionally not committed. If another developer needs the local source `.aimodel` or `best.pt` for testing or review, they should request it manually through a GitHub issue, repository comment, or direct owner contact if an email address is available.
