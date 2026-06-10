@@ -18,6 +18,9 @@ find .. -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) ! -pat
 .venv/bin/python create_ios_model_package.py --data-yaml configs/full_plant_data.yaml --output-dir ../models/ios-package --core-ai-dir ../models/core-ai
 plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Info.plist
 plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj/project.pbxproj
+cd ../ios/PlantDiseaseDetectorApp
+swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build
+python3 -m json.tool PlantDiseaseDetectorApp/Resources/ModelContract/model_contract.json >/dev/null
 ```
 
 ## Pass / Fail Status
@@ -43,15 +46,19 @@ plutil -lint ../ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp.xcodeproj/pr
 - `create_ios_model_package.py`: pass; wrote `models/ios-package/model_contract.json`, `plant_disease_labels.json`, and `README.md`
 - iOS `Info.plist` lint: pass
 - iOS `project.pbxproj` lint: pass
+- Swift raw postprocessing tests via SwiftPM: blocked by local Xcode license not accepted
+- Bundled iOS `model_contract.json` JSON parse: pass
 
 ## Environment Limitations
 
 - No reasonable local plant/leaf sample image was available, so real one-image detection was not run.
 - The generated `.aimodel` remains a local ignored artifact and was not committed.
 - Generated export/conversion artifacts remain local and ignored; they are not committed to Git.
+- SwiftPM / Xcode-backed Swift test execution is currently blocked on this machine because the Xcode license has not been accepted yet.
 
 ## Not Verified
 
 - Real one-image detector inference on a local plant/leaf sample
 - Real Core AI runtime inference inside the iOS app
 - Xcode app build success
+- Executing the new Swift raw postprocessing tests on this machine before the Xcode license is accepted

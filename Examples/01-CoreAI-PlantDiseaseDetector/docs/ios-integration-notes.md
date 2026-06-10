@@ -45,27 +45,32 @@ Examples/01-CoreAI-PlantDiseaseDetector/ios/
 - The generated handoff contract was copied to:
   `Resources/ModelContract/model_contract.json`
 - Current contract values:
-  - input image size: `320`
+  - input tensor: `image` `[1, 3, 320, 320]`
   - confidence threshold: `0.35`
   - IOU threshold: `0.45`
   - raw Core AI outputs:
-    - `raw_boxes`
-    - `raw_scores`
+    - `raw_boxes` `[1, 4, 2100]`
+    - `raw_scores` `[1, 38, 2100]`
 
 ## Why Swift Owns Postprocessing
 
 - The Core AI asset emits raw detector tensors, not final detections.
 - This keeps thresholding, class selection, and any NMS policy transparent and adjustable inside the app.
-- The current Swift app still needs the real runtime/postprocessing implementation; until then it remains on mock fallback.
+- `DetectionPostProcessor.swift` now implements:
+  - class-count and label-order validation
+  - best-class selection per anchor
+  - XYXY pixel to normalized `CGRect` conversion
+  - class-aware non-maximum suppression
+- The app still needs the verified Apple runtime loader/inference call; until then it remains on mock fallback.
 
 ## What Is Still Needed Later
 
 - Optional local bundling of the generated `.aimodel` for app testing.
 - Verified Core AI runtime loading/inference code once the SDK/API surface is confirmed.
-- Any Core AI-specific post-processing adjustments if the exported runtime output differs from the current JSON contract.
+- Any Core AI-specific output adaptation only if the verified runtime tensors differ from the current JSON contract.
 
 ## TODO Pending Xcode 27 / Core AI SDK Verification
 
-- Replace the placeholder error path in `CoreAIPlantDiseaseDetector.swift` with the verified runtime loader and inference call.
-- Confirm the final model bundle format expected by Core AI.
+- Replace the placeholder error path in `CoreAIPlantDiseaseDetector.swift` with the verified runtime loader and inference call that returns `raw_boxes` and `raw_scores`.
+- Confirm the final model bundle/runtime invocation format expected by Core AI.
 - Verify the Xcode project builds cleanly once the local Xcode license and SDK environment are available.

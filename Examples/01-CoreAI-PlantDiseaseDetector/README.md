@@ -1,27 +1,20 @@
 # Core AI Plant Disease Detector
 
-This example is being repositioned as an object detection demo around a fine-tuned YOLO checkpoint.
-
-Target workflow:
-
-1. Start from a local YOLO model at `models/raw/best.pt`.
-2. Add an export/conversion boundary for Apple on-device packaging.
-3. Produce a Core AI-ready model asset once the official SDK path is verified.
-4. Visualize detections in a SwiftUI app with bounding boxes, class labels, and confidence.
+This example is a YOLO-based plant disease object detector with a verified local Core AI conversion path and an iOS app foundation that is ready to postprocess raw detector outputs in Swift.
 
 ## Current Status
 
-- Scaffold/base refactor only.
-- Python YOLO pipeline is intentionally not implemented yet.
-- iOS detection UI is intentionally not implemented yet.
-- Exact Core AI APIs must still be verified against Xcode 27 / the Core AI SDK before real integration code is added.
+- The local YOLO checkpoint at `models/raw/best.pt` was validated against `python/configs/full_plant_data.yaml`.
+- The Python pipeline can export TorchScript, ONNX, and a local raw-output Core AI asset.
+- The Swift app owns postprocessing for `raw_boxes` and `raw_scores`.
+- Exact Apple runtime loading/inference APIs are still intentionally left behind a compile-safe placeholder until they are verified in the local Xcode/Core AI SDK environment.
 
 ## What This Example Is For
 
-- Align the repository structure with a detector workflow instead of a classifier workflow.
-- Define the shared model contract between Python and iOS early.
-- Reserve model directories for local checkpoints, exported artifacts, and Core AI-ready outputs.
-- Keep the current app and Python files in safe placeholder status for later worktrees.
+- Keep the YOLO training/export assets local and ignored.
+- Preserve a clear contract between Python conversion and Swift runtime code.
+- Demonstrate how a Core AI detector can emit raw tensors while iOS retains explicit control over thresholding and NMS.
+- Provide a small SwiftUI inspection app with a deterministic mock fallback while the Apple runtime path is being verified.
 
 ## Folder Structure
 
@@ -38,35 +31,31 @@ Examples/01-CoreAI-PlantDiseaseDetector/
 │       └── .gitkeep
 ├── python/
 │   ├── README.md
-│   ├── requirements.txt
-│   ├── generate_sample_dataset.py
-│   ├── train_leaf_classifier.py
 │   ├── convert_to_core_ai.py
-│   ├── predict_local.py
-│   ├── leaf_classifier_model.py
-│   ├── data/
-│   │   └── .gitkeep
-│   ├── models/
-│   │   └── .gitkeep
-│   └── sample_images/
-│       └── .gitkeep
+│   ├── create_ios_model_package.py
+│   ├── inspect_yolo_model.py
+│   ├── export_yolo_model.py
+│   ├── validate_environment.py
+│   ├── configs/
+│   └── tests/
 ├── ios/
 │   ├── README.md
-│   └── PlantLeafClassifierApp/
+│   └── PlantDiseaseDetectorApp/
 │       ├── README.md
-│       ├── PlantLeafClassifierApp.xcodeproj/
-│       └── PlantLeafClassifierApp/
-│           ├── PlantLeafClassifierApp.swift
-│           ├── ContentView.swift
-│           ├── PlantDiseaseDetectionViewModel.swift
-│           ├── LeafImagePicker.swift
-│           ├── CoreAIPlantDiseaseDetector.swift
-│           ├── MockPlantDiseaseDetector.swift
-│           ├── Info.plist
-│           ├── Assets.xcassets/
-│           └── Models/
-│               └── README.md
+│       ├── PlantDiseaseDetectorApp.xcodeproj/
+│       ├── Package.swift
+│       ├── Tests/
+│       └── PlantDiseaseDetectorApp/
+│           ├── App/
+│           ├── Models/
+│           ├── ViewModels/
+│           ├── Views/
+│           ├── Services/
+│           ├── Components/
+│           ├── Resources/
+│           └── Assets.xcassets/
 └── docs/
+    ├── ios-integration-notes.md
     ├── model-contract.md
     ├── conversion-notes.md
     ├── dataset-notes.md
@@ -77,10 +66,10 @@ Examples/01-CoreAI-PlantDiseaseDetector/
 
 ## Requirements
 
-- A local fine-tuned YOLO checkpoint placed at `models/raw/best.pt`.
-- Python 3.10+ for the future export pipeline work.
-- Xcode for opening the included SwiftUI scaffold.
-- Later verification of the official Core AI conversion/runtime path before production integration.
+- A local fine-tuned YOLO checkpoint at `models/raw/best.pt`.
+- The project Python environments for validation/export.
+- Xcode for opening the SwiftUI app.
+- Local Core AI SDK verification before replacing the placeholder runtime loader.
 
 ## Model Layout
 
@@ -90,26 +79,27 @@ Examples/01-CoreAI-PlantDiseaseDetector/
 
 ## Model Conversion Flow
 
-- The eventual pipeline will convert a YOLO `.pt` detector into Apple-compatible artifacts.
-- The exact Core AI conversion path is intentionally left unresolved until the SDK/API surface is verified locally.
-- No claim is made that the current scaffold performs real YOLO export or Core AI conversion.
+- `convert_to_core_ai.py` exports a raw-output detector asset named `FarmerHelper_YOLO26_RawDetector.aimodel`.
+- The converted asset exposes:
+  - `raw_boxes`: `[1, 4, 2100]`
+  - `raw_scores`: `[1, 38, 2100]`
+- Swift postprocessing is intentionally separate so confidence filtering, label mapping, normalization, and class-aware NMS stay transparent and adjustable in the app.
 
 ## iOS App Flow
 
-- `PlantLeafClassifierApp.xcodeproj` remains a lightweight scaffold only.
-- The current Swift files are placeholders that will be refactored into a real detector UI in a separate worktree.
-- Future iOS work will focus on image loading, running detection, and drawing bounding boxes.
+- `PlantDiseaseDetectorApp` already provides the image picker, overlay UI, and runtime status panel.
+- `DetectionPostProcessor.swift` now implements the raw YOLO tensor parsing path that the eventual Core AI runtime call will feed.
+- `CoreAIPlantDiseaseDetector.swift` remains compile-safe and intentionally does not invent unverified Apple APIs.
+- `MockPlantDiseaseDetector.swift` remains the local fallback path until the real runtime loader is confirmed.
 
 ## Known Limitations
 
-- No YOLO Python implementation is included yet.
-- No SwiftUI bounding-box detection UI is included yet.
-- Apple Core AI SDK symbols are still unverified in this environment.
-- The legacy classifier-oriented placeholder files under `python/` and `ios/` have not been deeply rewritten in this refactor.
+- The generated `.aimodel` remains local/ignored and is not bundled automatically.
+- The Apple runtime entrypoint for `.aimodel` execution is still pending local SDK verification.
+- End-to-end Core AI inference inside the app is therefore not yet claimed as verified.
 
 ## Verification Status
 
-- Folder rename and model layout update: completed.
-- Lightweight file-tree and Python syntax checks: recorded in `docs/verification-report.md`.
-- Python YOLO pipeline: not implemented yet.
-- iOS detector UI: not implemented yet.
+- Python model validation/export/conversion checks: recorded in `docs/verification-report.md`.
+- Swift raw-output postprocessing tests: recorded in `docs/verification-report.md`.
+- Xcode-side app build/runtime verification: still pending local developer verification.

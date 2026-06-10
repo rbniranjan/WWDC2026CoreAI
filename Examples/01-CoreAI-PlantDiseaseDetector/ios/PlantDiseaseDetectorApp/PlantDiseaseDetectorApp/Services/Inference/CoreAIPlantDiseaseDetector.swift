@@ -10,11 +10,14 @@ struct CoreAIPlantDiseaseDetector: PlantDiseaseDetectorProtocol {
 
     var runtimeInfo: ModelRuntimeInfo {
         let assetURL = resourceLoader.primaryModelAssetURL()
+        let contract = resourceLoader.loadModelContract()
         return ModelRuntimeInfo(
             mode: .coreAI,
             detail: assetURL == nil
                 ? "No model asset detected yet. The app will fall back to mock detections."
-                : "Model asset found, but real Core AI runtime wiring remains TODO.",
+                : contract == nil
+                    ? "Model asset found, but the bundled raw detector contract is missing or unreadable."
+                    : "Model asset found. Swift raw-output postprocessing is ready, but verified Core AI runtime wiring remains TODO.",
             modelSearchPath: "Resources/AIModels/",
             modelAssetAvailable: assetURL != nil
         )
@@ -30,10 +33,10 @@ struct CoreAIPlantDiseaseDetector: PlantDiseaseDetectorProtocol {
         }
 
         // TODO(Core AI SDK verification):
-        // Replace this placeholder with verified Apple Core AI runtime calls once
-        // the exact Xcode 27 / Core AI symbols are confirmed locally.
-        // The Python/model agent will later provide the converted model asset
-        // and a matching exported contract for detector outputs.
+        // 1. Load the local .aimodel from Resources/AIModels/.
+        // 2. Invoke the verified Core AI entrypoint with image -> raw_boxes/raw_scores.
+        // 3. Feed those raw tensors into DetectionPostProcessor.detectionsFromRawOutputs(...)
+        //    using the bundled label catalog and contract thresholds.
         throw PlantDiseaseDetectorError.coreAINotVerified
     }
 }

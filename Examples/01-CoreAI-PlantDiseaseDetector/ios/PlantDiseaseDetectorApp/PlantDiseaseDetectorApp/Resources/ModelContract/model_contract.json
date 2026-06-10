@@ -1,14 +1,36 @@
 {
-  "model_name": "FarmerHelper_YOLO26_PlantDiseaseDetector",
+  "model_name": "FarmerHelper_YOLO26_RawDetector",
   "task": "object_detection",
-  "input_image_size": 320,
+  "runtime_entrypoint": "detect_raw",
+  "input": {
+    "name": "image",
+    "shape": [1, 3, 320, 320],
+    "layout": "NCHW",
+    "dtype": "float32",
+    "semantic": "RGB image tensor resized to model input space"
+  },
+  "outputs": [
+    {
+      "name": "raw_boxes",
+      "shape": [1, 4, 2100],
+      "layout": "BCA",
+      "dtype": "float32",
+      "semantic": "xyxy pixel coordinates in 320x320 model input space"
+    },
+    {
+      "name": "raw_scores",
+      "shape": [1, 38, 2100],
+      "layout": "BCA",
+      "dtype": "float32",
+      "semantic": "per-class detector scores for each anchor"
+    }
+  ],
   "classes_count": 38,
   "confidence_threshold": 0.35,
   "iou_threshold": 0.45,
-  "output_format": {
-    "bbox": "xyxy_pixels",
-    "class_id": "int",
-    "class_name": "string",
-    "confidence": "float"
-  }
+  "postprocessing_responsibility": "Swift iOS app",
+  "notes": [
+    "The Core AI asset intentionally emits raw detector tensors instead of final detections.",
+    "Swift selects the best class per anchor, applies the confidence threshold, converts xyxy pixels into normalized CGRect values, and runs class-aware NMS."
+  ]
 }

@@ -40,7 +40,7 @@ The export script now normalizes generated artifacts into `models/exported/` so 
 
 - The Core AI conversion wraps the detector and exports only `raw_boxes` and `raw_scores`.
 - This avoids baking confidence filtering, class mapping, and NMS decisions into the asset conversion step.
-- The Swift app owns postprocessing so thresholds, label presentation, and overlay logic remain explicit and debuggable on-device.
+- The Swift app now owns postprocessing through `DetectionPostProcessor.swift`, so thresholds, label presentation, and overlay logic remain explicit and debuggable on-device.
 
 ## Repeatable Conversion Runs
 
@@ -77,6 +77,6 @@ python3 create_ios_model_package.py --data-yaml configs/full_plant_data.yaml --o
 ## Exact TODOs Requiring Local Apple SDK Verification
 
 1. Copy the resulting `.aimodel` into `ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/` when you want to bundle it locally for app testing.
-2. Implement Swift-side postprocessing for `raw_boxes` and `raw_scores`.
-3. Replace the current mock-first runtime path with verified Core AI loading and inference behavior.
+2. Replace the current placeholder runtime path with verified Core AI loading and inference behavior.
+3. Verify that the runtime emits `raw_boxes` and `raw_scores` exactly as described by the handoff contract.
 4. Verify the Xcode-side app integration path end to end.
