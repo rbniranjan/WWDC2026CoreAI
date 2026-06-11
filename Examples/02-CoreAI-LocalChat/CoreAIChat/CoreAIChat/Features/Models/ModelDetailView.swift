@@ -15,62 +15,101 @@ struct ModelDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text(model.name)
-                        .font(.largeTitle.bold())
-                    Text(model.description)
-                        .foregroundStyle(.secondary)
-                }
-
                 CardView {
-                    VStack(spacing: AppSpacing.md) {
-                        detailRow("Family", model.family)
-                        detailRow("Format", model.format)
-                        detailRow("Quantization", model.quantization)
-                        detailRow("File name", model.fileName)
-                        detailRow("Artifact type", model.artifactType ?? "Manual .aimodel")
-                        detailRow("Context window", "\(model.contextWindow) tokens")
-                        detailRow("Estimated size", expectedSizeText)
-                        detailRow("Local availability", viewModel.availability(for: model).displayText)
-                        detailRow("Download support", model.downloadSupported ? "Supported" : "Manual only")
-                        detailRow("Checksum", model.sha256 == nil ? "Not provided" : "SHA-256 provided")
-                        detailRow("Manifest source", viewModel.manifestSource.rawValue)
-                        detailRow("Minimum OS", model.minimumOS ?? "Not specified")
-                        detailRow("Supported devices", model.supportedDevices?.joined(separator: ", ") ?? "Not specified")
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        HStack(alignment: .top, spacing: AppSpacing.md) {
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                                Text(model.name)
+                                    .font(.largeTitle.bold())
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.75)
+                                Text(model.description)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            if viewModel.isActive(model) {
+                                StatusBadgeView(title: "Active", systemImage: "checkmark.seal.fill", tint: Color.accentColor)
+                            }
+                        }
+
+                        HStack(spacing: AppSpacing.sm) {
+                            ModelAvailabilityBadge(availability: viewModel.availability(for: model))
+                            StatusBadgeView(title: downloadState.displayText, systemImage: model.downloadSupported ? "arrow.down.circle" : "hand.raised", tint: model.downloadSupported ? Color.accentColor : AppColors.neutral)
+                        }
                     }
                 }
 
                 if !isAvailable {
-                    Label("Model file not found in Resources/AIModels.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(AppColors.warning)
+                    CardView(background: AppColors.warning.opacity(0.12)) {
+                        Label("This model is not runtime-ready. Chat will use the mock runtime until a matching local `.aimodel` is available.", systemImage: "exclamationmark.triangle.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.warning)
+                    }
                 }
 
-                Button {
-                    viewModel.setActive(model)
-                } label: {
-                    Label("Set as Active Model", systemImage: "checkmark.circle")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!isAvailable)
+                CardView {
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        SectionHeaderView(title: "Actions", subtitle: "Set the active model or manage a downloadable artifact.")
 
-                downloadActions
+                        Button {
+                            viewModel.setActive(model)
+                        } label: {
+                            Label("Set Active Model", systemImage: "checkmark.circle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!isAvailable)
+
+                        downloadActions
+                    }
+                }
+
+                CardView {
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        SectionHeaderView(title: "Model Metadata", subtitle: "Values come from the JSON manifest.")
+                        LazyVGrid(columns: metadataColumns, alignment: .leading, spacing: AppSpacing.md) {
+                            metadataItem("Family", model.family)
+                            metadataItem("Format", model.format)
+                            metadataItem("Quantization", model.quantization)
+                            metadataItem("Context window", "\(model.contextWindow) tokens")
+                            metadataItem("Expected size", expectedSizeText)
+                            metadataItem("Artifact type", model.artifactType ?? "Manual .aimodel")
+                            metadataItem("Checksum", model.sha256 == nil ? "Not provided" : "SHA-256 provided")
+                            metadataItem("Local availability", viewModel.availability(for: model).displayText)
+                            metadataItem("Download state", downloadState.displayText)
+                            metadataItem("Manifest source", viewModel.manifestSource.rawValue)
+                            metadataItem("Minimum OS", model.minimumOS ?? "Not specified")
+                            metadataItem("Supported devices", model.supportedDevices?.joined(separator: ", ") ?? "Not specified")
+                        }
+                    }
+                }
 
                 if !model.downloadSupported {
                     CardView {
                         VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Label("Manual .aimodel required", systemImage: "folder.badge.questionmark")
                                 .font(.headline)
-                            Text("Copy a matching `.aimodel` into Resources/AIModels. See Resources/AIModels/README.md.")
+                            Text("Copy `\(model.fileName)` into `CoreAIChat/Resources/AIModels/`. The file name must match the manifest entry exactly.")
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
             }
             .padding(AppSpacing.xl)
-            .frame(maxWidth: 760, alignment: .leading)
+            .frame(maxWidth: AppSpacing.readableMaxWidth, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
+        .background(AppColors.background)
         .navigationTitle(model.name)
+    }
+
+    private var metadataColumns: [GridItem] {
+        [
+            GridItem(.adaptive(minimum: 220), spacing: AppSpacing.md, alignment: .topLeading),
+        ]
     }
 
     private var expectedSizeText: String {
@@ -84,7 +123,9 @@ struct ModelDetailView: View {
     private var downloadActions: some View {
         switch downloadState {
         case .notAvailable:
-            EmptyView()
+            Text("Downloads are not configured for this manifest entry.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         case .notDownloaded, .unavailable:
             Button {
                 Task { await viewModel.downloadModel(model) }
@@ -95,11 +136,12 @@ struct ModelDetailView: View {
             .buttonStyle(.bordered)
             .disabled(!(model.downloadSupported && model.downloadURL != nil))
         case .downloading:
-            VStack(spacing: AppSpacing.sm) {
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 ProgressView()
                 Button("Cancel Download") {
                     viewModel.cancelDownload(model)
                 }
+                .buttonStyle(.bordered)
             }
         case .downloaded:
             Button(role: .destructive) {
@@ -120,14 +162,16 @@ struct ModelDetailView: View {
         }
     }
 
-    private func detailRow(_ title: String, _ value: String) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+    private func metadataItem(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
             Text(title)
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-            Spacer(minLength: AppSpacing.lg)
             Text(value)
+                .font(.subheadline)
                 .fontWeight(.medium)
-                .multilineTextAlignment(.trailing)
+                .foregroundStyle(.primary)
+                .textSelection(.enabled)
         }
     }
 }

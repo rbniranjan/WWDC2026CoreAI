@@ -1,96 +1,64 @@
 # 02-CoreAI-LocalChat
 
-Swift-only Core AI local chat app foundation with a model catalog, active model selection, manual local `.aimodel` support, and a compile-safe Core AI runtime boundary.
+CoreAIChat is a SwiftUI local-chat app foundation for Apple Core AI workflows. It provides the app shell around model discovery, settings, download state, and runtime boundaries without shipping real model artifacts.
 
-## Summary
+## What The App Does
 
-This example is a local chat app shell for Apple Core AI workflows. It does not ship model files or real LLM generation yet, but it does include a working SwiftUI chat experience through `MockChatRuntime`, a JSON-driven model catalog, local model detection, model detail flows, active model selection, and a foundation for remote manifest and download workflows.
-
-## Status
-
-| Area | Status | Notes |
-| --- | --- | --- |
-| Chat UI | Working foundation | powered by `MockChatRuntime` |
-| Model catalog | Implemented | bundled manifest plus remote/cached fallback |
-| Active model selection | Implemented | persisted locally |
-| Manual local `.aimodel` setup | Implemented | detects files under `Resources/AIModels` |
-| `CoreAIChatRuntime` boundary | Implemented | compile-safe placeholder, no fake Core AI APIs |
-| Settings screen | Implemented foundation | generation, catalog, storage visibility |
-| Download manager | Implemented foundation | Application Support storage, checksum support, no archive extraction yet |
-| SwiftPM tests | Passed | exact count not summarized here |
-| Xcode beta build | Passed | verified with inline `DEVELOPER_DIR` |
-
-## Architecture
-
-```text
-model_manifest.json
--> local model detection / remote catalog fallback
--> CoreAIChatRuntime or MockChatRuntime
--> chat UI, model detail, active model selection
-```
+- Runs a polished SwiftUI chat interface with `MockChatRuntime`.
+- Loads a JSON-driven model catalog from the app bundle.
+- Optionally loads a remote manifest, caches it, and falls back safely.
+- Detects manual local `.aimodel` files in `Resources/AIModels`.
+- Persists active model selection and generation settings.
+- Shows model availability, download state, and manifest source.
+- Provides a download-manager foundation with Application Support storage and SHA-256 verification.
+- Keeps `CoreAIChatRuntime` as a compile-safe boundary for future Core AI LLM integration.
 
 ## Current Scope
 
-Phase 1:
+| Area | Status |
+| --- | --- |
+| Chat UI | Polished SwiftUI surface backed by mock generation |
+| Model catalog | Bundled JSON plus optional remote, cached remote, and bundled fallback |
+| Model list/detail | Card-based model browser with metadata, availability, and actions |
+| Settings | Generation, model catalog, storage, and developer notes |
+| Manual `.aimodel` setup | Supported for local testing |
+| Downloads | Foundation implemented; archive extraction is future work |
+| Real LLM generation | Not implemented |
+| RAG/tokenizer/KV cache | Not implemented |
 
-- SwiftUI chat app shell
-- mock runtime
-- bundled model manifest
-- model list and detail screens
-- active model selection
-- manual `.aimodel` detection
+## Runtime Behavior
 
-Phase 2 foundation:
+`MockChatRuntime` is the working runtime. The chat screen stays usable even when no model is installed.
 
-- settings screen
-- optional remote manifest loading with cached fallback
-- download manager backed by Application Support storage
-- availability states for bundled, downloaded, missing, and unsupported entries
+`CoreAIChatRuntime` validates local model availability and reports that runtime integration is pending. It does not call invented Core AI APIs. When a selected model is missing, unavailable, or only present as a downloaded archive, the app falls back to the mock runtime.
 
 ## Manual `.aimodel` Setup
 
-Place local models here:
+Copy local test models into:
 
 ```text
 Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/
 ```
 
-The file names must match entries in:
+The file name must exactly match the `fileName` value in:
 
 ```text
 Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/ModelManifest/model_manifest.json
 ```
 
-No real `.aimodel` files are committed to the repository.
+`.aimodel` files are ignored by git and must not be committed.
 
-## Runtime Boundary
+## Build And Test
 
-`MockChatRuntime` is the working runtime for the example.
-
-`CoreAIChatRuntime` exists as a compile-safe boundary that validates local `.aimodel` presence and reports that real Core AI runtime integration is still pending. It intentionally does not invent unreleased or uncertain Apple generation APIs.
-
-## Model Artifact Policy
-
-Local `.aimodel` files, downloaded model artifacts, build outputs, DerivedData, `.build`, and `.swiftpm` outputs are intentionally excluded from Git. If a reviewer needs model artifacts for testing, they should request them manually through a GitHub issue, repository comment, or direct owner contact.
-
-## Verification
-
-Use inline `DEVELOPER_DIR`. Do not change the system default Xcode.
-
-Verified local beta path on the author machine:
-
-```bash
-export BETA_DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer"
-```
-
-Commands:
+Use the Xcode beta inline. Do not change the default Xcode.
 
 ```bash
 cd Examples/02-CoreAI-LocalChat/CoreAIChat
 
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" swift test --scratch-path /tmp/coreai-chat-swiftpm-build
+DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer" swift test \
+  --scratch-path /tmp/coreai-chat-swiftpm-build
 
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild \
+DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer" xcodebuild \
   -project CoreAIChat.xcodeproj \
   -scheme CoreAIChat \
   -sdk iphonesimulator \
@@ -99,37 +67,31 @@ DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild \
   build
 ```
 
-Verified results:
+Expected local toolchain:
 
-- SwiftPM tests: passed
-- Xcode beta build: passed
-- default Xcode: unchanged
+- Xcode 27.0
+- Build version 27A5194q
+- Swift 6.4
 
-## What Is Implemented
+## What Is Intentionally Excluded
 
-- SwiftUI chat shell
-- JSON-driven model manifest
-- local `.aimodel` detection
-- active model selection
-- mock runtime behavior
-- compile-safe `CoreAIChatRuntime` boundary
-- remote manifest and download-manager foundation
-- settings foundation
+- Real `.aimodel` artifacts
+- Model weights
+- Python code
+- `llama.cpp`
+- Third-party inference runtimes
+- Real Core AI LLM generation
+- Tokenizer/KV-cache implementation
+- RAG and document ingestion
+- Archive extraction into installed `.aimodel` files
 
-## What Is Not Included Yet
+## Docs
 
-- committed `.aimodel` files
-- real Core AI LLM generation
-- tokenizer / KV cache management
-- archive extraction into runtime-ready downloaded `.aimodel` files
-- RAG or local document pipelines
-
-## Related Docs
-
-- [Architecture](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/ARCHITECTURE.md)
-- [Model manifest](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/MODEL_MANIFEST.md)
-- [Manual model setup](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/MANUAL_MODEL_SETUP.md)
-- [Download manager](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/DOWNLOAD_MANAGER.md)
-- [Settings](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/SETTINGS.md)
-- [Roadmap](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/ROADMAP.md)
-- [Verification](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/docs/VERIFICATION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Model manifest](docs/MODEL_MANIFEST.md)
+- [Manual model setup](docs/MANUAL_MODEL_SETUP.md)
+- [Download manager](docs/DOWNLOAD_MANAGER.md)
+- [Settings](docs/SETTINGS.md)
+- [iPhone, iPad, and Mac support](docs/IOS_IPAD_MAC_SUPPORT.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Verification](docs/VERIFICATION.md)

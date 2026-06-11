@@ -4,20 +4,29 @@ CoreAIChat is a SwiftUI app target for iPhone, iPad, and Mac Catalyst. It is the
 
 The app uses `MockChatRuntime` for a working chat experience. `CoreAIChatRuntime` is a compile-safe integration boundary that validates selected `.aimodel` files and reports that Core AI runtime integration is pending.
 
-Phase 2 adds a settings screen, optional remote model catalogs, cached catalog fallback, local availability states, and a Foundation/CryptoKit download-manager foundation. It does not add Python, llama.cpp, third-party runtimes, or real model artifacts.
+Phase 2 adds a settings screen, optional remote model catalogs, cached catalog fallback, local availability states, and a Foundation/CryptoKit download-manager foundation. Phase 2B polishes the chat, models, detail, settings, and navigation UI for iPhone, iPad, and Mac Catalyst.
+
+The app does not add Python, llama.cpp, third-party runtimes, real model artifacts, or invented Core AI generation APIs.
 
 ## Build
 
 From this directory:
 
 ```bash
-DEVELOPER_DIR=/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer xcodebuild -project CoreAIChat.xcodeproj -scheme CoreAIChat -destination 'generic/platform=iOS Simulator' build
+DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer" xcodebuild \
+  -project CoreAIChat.xcodeproj \
+  -scheme CoreAIChat \
+  -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /tmp/coreai-chat-derived-data \
+  build
 ```
 
 Run the package tests:
 
 ```bash
-DEVELOPER_DIR=/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer swift test --scratch-path /tmp/coreai-chat-swiftpm-build
+DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer" swift test \
+  --scratch-path /tmp/coreai-chat-swiftpm-build
 ```
 
 ## Local Model Files

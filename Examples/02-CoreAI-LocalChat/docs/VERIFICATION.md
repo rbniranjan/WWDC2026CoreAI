@@ -17,7 +17,7 @@ The script checks:
 
 Do not run `xcode-select -s`.
 
-Additional manual checks for Phase 2:
+Additional manual checks for Phase 2B:
 
 ```bash
 plutil -lint CoreAIChat/CoreAIChat/Info.plist
@@ -26,3 +26,9 @@ git check-ignore -v CoreAIChat/CoreAIChat/Resources/AIModels/LocalDemoModel.aimo
 ```
 
 The final check should confirm `.aimodel` files are ignored while `Resources/AIModels/README.md` remains trackable.
+
+Expected toolchain on the current local setup:
+
+- Xcode 27.0
+- Build version 27A5194q
+- Swift 6.4

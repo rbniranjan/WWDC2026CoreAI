@@ -17,6 +17,12 @@
 - Download state, delete, retry, and SHA-256 integrity checks.
 - Availability states for bundled, downloaded, missing, and unsupported model entries.
 
+## Phase 2B
+
+- Polished chat, model, detail, settings, and navigation UI.
+- Reusable design-system badges, cards, section headers, runtime status, and empty states.
+- Public README and developer documentation refresh.
+
 ## Later Phases
 
 - Prompt templates.

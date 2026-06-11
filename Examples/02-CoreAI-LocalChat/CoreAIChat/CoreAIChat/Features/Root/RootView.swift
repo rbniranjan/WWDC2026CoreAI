@@ -17,9 +17,11 @@ struct RootView: View {
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(selection == item ? Color.accentColor : Color.primary)
+                    .listRowBackground(selection == item ? Color.accentColor.opacity(0.12) : Color.clear)
                 }
             }
             .navigationTitle("CoreAIChat")
+            .listStyle(.sidebar)
         } detail: {
             Group {
                 switch selection {

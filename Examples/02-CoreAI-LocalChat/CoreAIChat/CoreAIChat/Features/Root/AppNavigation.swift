@@ -1,6 +1,6 @@
 import Foundation
 
-enum AppNavigation: String, CaseIterable, Identifiable {
+enum AppNavigation: String, CaseIterable, Hashable, Identifiable {
     case chat
     case models
     case settings

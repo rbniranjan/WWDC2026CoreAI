@@ -27,7 +27,7 @@ Each record includes:
 - `minimumOS`
 - `supportedDevices`
 
-The manifest is the source of truth for the model list and detail screens. Views should not hardcode model records.
+The manifest is the source of truth for the model list and detail screens. Views should not hardcode model records, model names, model family labels, or download URLs.
 
 Older manifest records that omit the Phase 2 download fields still decode with conservative defaults. By default, a record is treated as not bundled, not downloadable, and unavailable until a matching local artifact is present.
 
@@ -41,6 +41,17 @@ The app supports four catalog source states:
 - `fallbackBundled`: remote loading and cached remote loading were unavailable, so the bundled manifest was used.
 
 Remote manifests must use the same schema as the bundled JSON. The app does not execute manifest content; URLs are only used by the download manager when a model is explicitly downloaded.
+
+## UI Usage
+
+The model list and model detail screens render directly from manifest data:
+
+- model name, family, format, and quantization
+- context window and expected size
+- artifact type and checksum availability
+- manual-only or downloadable state
+- manifest source
+- supported devices and minimum OS when present
 
 ## Artifacts
 

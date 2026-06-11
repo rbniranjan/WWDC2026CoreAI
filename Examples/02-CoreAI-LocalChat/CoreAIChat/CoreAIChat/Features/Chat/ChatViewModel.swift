@@ -2,9 +2,7 @@ import Foundation
 
 @MainActor
 final class ChatViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = [
-        ChatMessage(role: .assistant, content: "Ask a question to try the Phase 1 mock chat runtime.")
-    ]
+    @Published var messages: [ChatMessage] = []
     @Published var inputText = ""
     @Published private(set) var activeModel: ModelVariant?
     @Published private(set) var activeModelAvailability: ModelAvailability = .missing
@@ -41,6 +39,18 @@ final class ChatViewModel: ObservableObject {
         }
 
         return "\(activeModel.name) unavailable — using mock runtime."
+    }
+
+    var runtimeModeText: String {
+        guard activeModel != nil else {
+            return "Mock runtime"
+        }
+
+        if activeModelAvailability.isUsable {
+            return "Core AI boundary"
+        }
+
+        return "\(activeModelAvailability.displayText) - mock fallback"
     }
 
     func refreshActiveModel() async {
@@ -89,8 +99,11 @@ final class ChatViewModel: ObservableObject {
     }
 
     func clearChat() {
-        messages = [
-            ChatMessage(role: .assistant, content: "Chat cleared. Send a message to start again.")
-        ]
+        messages = []
+    }
+
+    func useSuggestedPrompt(_ prompt: String) async {
+        inputText = prompt
+        await send()
     }
 }

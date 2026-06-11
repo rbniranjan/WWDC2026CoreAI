@@ -16,7 +16,8 @@ Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/ModelManifest/model
 ```
 
 4. Open the app, go to Models, and refresh or relaunch.
-5. Select a local model and use Set as Active Model.
+5. Select a local model and use Set Active Model.
+6. Return to Chat. The active-model card will show whether the model is runtime-ready or whether the mock fallback is still being used.
 
 `.aimodel` files are ignored by git. Do not commit model weights, generated model artifacts, build products, DerivedData, or downloaded models.
 
