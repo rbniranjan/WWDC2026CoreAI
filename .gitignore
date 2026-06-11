@@ -10,6 +10,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Local Core AI model bundles for Example 02
+Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/**/*
+!Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/
+!Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/README.md
+
 # Example-generated data and model artifacts
 Examples/01-CoreAI-PlantDiseaseDetector/python/data/sample_leaf_dataset/
 Examples/01-CoreAI-PlantDiseaseDetector/python/models/*.pt
