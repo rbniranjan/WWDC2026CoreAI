@@ -31,25 +31,51 @@ Design intent:
 `ZooFMProviderAdapter` is guarded by:
 
 ```swift
-#if canImport(ZooFMProvider)
+#if ENABLE_ZOO_FM_PROVIDER && canImport(ZooFMProvider)
 ```
 
 That means:
 
-- current builds without the package still compile
-- future builds that add the package can activate the adapter path without renaming the boundary
+- current builds without the flag and without the package still compile
+- future builds that add both the compile flag and the package can activate the adapter path without renaming the boundary
+
+## Local-Only Enablement Plan
+
+Use a local developer override only. Do not commit these changes.
+
+Recommended approach:
+
+1. keep the shared project and package files unchanged for normal builds
+2. add a local Xcode override that appends:
+
+```text
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) ENABLE_ZOO_FM_PROVIDER
+```
+
+3. add the external package dependency locally only after preparing the patched `coreai-models` checkout
+4. keep any local wrapper package reference or user-specific project edits out of git
+
+For SwiftPM-only local experiments, the equivalent compile flag is:
+
+```bash
+swift test -Xswiftc -DENABLE_ZOO_FM_PROVIDER
+```
+
+That flag alone does not make the module available. The package still needs to be linked in a local-only integration setup.
 
 ## Current Adapter Behavior
 
 When `ZooFMProvider` is unavailable:
 
 - adapter returns `.unavailable`
-- reason explains that the package is not linked into `CoreAIChat`
-- reason also calls out the patched `coreai-models` prerequisite
+- reason explains whether the compile flag is off or the module is missing
+- default builds report that `ENABLE_ZOO_FM_PROVIDER` is not enabled
+- flag-enabled builds without the module report that `ZooFMProvider` is still not linked
 
 When `ZooFMProvider` becomes importable in a future spike:
 
-- adapter can return `.available`
+- adapter can return `.available` only when the compile flag is enabled and the local bundle path exists
+- missing bundle path or missing local bundle directory returns a clear `.unavailable` reason
 - no chat-generation wiring happens yet
 - the adapter remains a boundary object until a later phase integrates it into runner selection
 

@@ -40,7 +40,7 @@ Recommended strategy for the next implementation phase:
 
 1. Keep the current app and tests unchanged for simulator builds.
 2. Add a new optional runner file in our app, for example `ZooFMChatRuntime.swift`, that conforms to our existing `ChatModelRuntime`.
-3. Gate that runner to environments where the Apple runtime stack is available.
+3. Gate that runner behind a local compile flag such as `ENABLE_ZOO_FM_PROVIDER` and environments where the Apple runtime stack is available.
 4. Use `ZooFMProvider` as the external runtime layer, not the upstream app code.
 5. Keep `MockChatRuntime` as the fallback for simulator and unsupported targets.
 
@@ -127,6 +127,17 @@ Updated blocker assessment:
 
 - The blocker is not compilation.
 - The blocker is adoption cost and packaging shape: the runtime currently depends on a patched local Apple checkout and a broad transitive package graph that we should not pull directly into the Example 02 app target graph yet.
+
+## Default Build Policy
+
+Normal shared builds must continue to work without `ZooFMProvider`.
+
+Current policy:
+
+- do not add `ZooFMProvider` to the default Example 02 target graph
+- do not require a patched `coreai-models` checkout for default builds
+- gate any future adapter wiring behind a local compile condition such as `ENABLE_ZOO_FM_PROVIDER`
+- keep the default app runtime on the existing mock and placeholder paths until a local developer intentionally enables the external runtime
 
 ## Minimal Integration Shape For Our App
 

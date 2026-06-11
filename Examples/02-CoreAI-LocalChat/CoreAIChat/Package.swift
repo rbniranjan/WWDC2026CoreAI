@@ -32,6 +32,7 @@ let package = Package(
                 "Core/Runtime/CoreAIRunnerArchitecture.swift",
                 "Core/Runtime/CoreAIConcreteRunnerSkeletons.swift",
                 "Core/Runtime/ExternalRuntimeAvailability.swift",
+                "Core/Runtime/ExternalRuntimeBuildOptions.swift",
                 "Core/Runtime/ExternalRuntimeProvider.swift",
                 "Core/Runtime/MockChatRuntime.swift",
                 "Core/Runtime/RuntimeStatus.swift",
