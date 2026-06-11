@@ -79,6 +79,55 @@ Current blockers:
 - The upstream verification note is for macOS 27 beta. That is materially better than `CoreAIRunner`, but it does not give us a ready simulator path for our existing app build lane.
 - Our current Example 02 verification path is iPhone simulator, and simulator builds cannot exercise the real Core AI runtime stack.
 
+## Phase 3C Spike Result
+
+An isolated build spike was created at [ExternalRuntimeSpike](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike) and mirrored into a temporary harness outside the repo for compilation.
+
+Observed result:
+
+- `ZooFMProvider` built successfully with Xcode 27 beta after supplying a sibling Apple `coreai-models` checkout and applying the four upstream patches.
+- The patched Apple checkout used for the probe was `a270998`.
+- The compile path is therefore viable.
+
+Exact files used in the isolated spike:
+
+- [Package.swift](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/Package.swift)
+- [README.md](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/README.md)
+- [PromptRenderer.swift](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/Sources/ZooFMProvider/PromptRenderer.swift)
+- [StreamTagParser.swift](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/Sources/ZooFMProvider/StreamTagParser.swift)
+- [ZooExecutor.swift](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/Sources/ZooFMProvider/ZooExecutor.swift)
+- [ZooLanguageModel.swift](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/Sources/ZooFMProvider/ZooLanguageModel.swift)
+- [coreai-model-zoo-BSD-3-Clause.txt](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/02-CoreAI-LocalChat/ExternalRuntimeSpike/ThirdPartyLicenses/coreai-model-zoo-BSD-3-Clause.txt)
+
+Direct dependency requirements confirmed by the spike:
+
+- sibling `../coreai-models` checkout
+- upstream patch stack:
+  - `coreai-shared-product.patch`
+  - `coreai-pipelined-extra-states.patch`
+  - `coreai-pipelined-per-token-inputs.patch`
+  - `coreai-pipelined-static-inputs.patch`
+
+Transitive SwiftPM dependencies observed during the successful build:
+
+- `swift-transformers`
+- `swift-huggingface`
+- `swift-jinja`
+- `xgrammar`
+- `yyjson`
+- `EventSource`
+- `swift-nio`
+- `swift-crypto`
+- `swift-collections`
+- `swift-atomics`
+- `swift-system`
+- `swift-asn1`
+
+Updated blocker assessment:
+
+- The blocker is not compilation.
+- The blocker is adoption cost and packaging shape: the runtime currently depends on a patched local Apple checkout and a broad transitive package graph that we should not pull directly into the Example 02 app target graph yet.
+
 ## Minimal Integration Shape For Our App
 
 The smallest acceptable integration would be:
