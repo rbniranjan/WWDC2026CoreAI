@@ -193,7 +193,8 @@ final class ModelLibraryViewModel: ObservableObject {
     func preflight(for profile: CoreAIExternalModelProfile) -> CoreAIRunnerPreflightResult {
         externalRunnerRegistry.preflight(
             profile: profile,
-            localArtifacts: resolvedArtifacts(for: profile)
+            localArtifacts: resolvedArtifacts(for: profile),
+            bundleRootURL: localModelStore.resolvedExternalBundleRootURL(for: profile)
         )
     }
 

@@ -153,6 +153,179 @@ struct CoreAIResolvedArtifact: Equatable, Hashable, Identifiable {
     }
 }
 
+// MARK: - Bundle Inspection
+
+enum ArtifactCheckExpectedKind: String, Codable, Equatable, Hashable {
+    case file
+    case directory
+}
+
+struct ArtifactCheckResult: Codable, Equatable, Hashable, Identifiable {
+    var id: String
+    var title: String
+    var relativePath: String?
+    var expectedKind: ArtifactCheckExpectedKind
+    var required: Bool
+    var actualURL: URL?
+    var exists: Bool
+    var kindMatches: Bool
+    var isDirectory: Bool?
+
+    var isSatisfied: Bool {
+        exists && kindMatches
+    }
+
+    var expectedLocationDescription: String {
+        relativePath ?? "bundle root"
+    }
+}
+
+struct ModelBundleInspectionResult: Codable, Equatable, Hashable {
+    var inspectorName: String
+    var bundleRootURL: URL?
+    var checks: [ArtifactCheckResult]
+
+    var missingRequiredChecks: [ArtifactCheckResult] {
+        checks.filter { $0.required && !$0.isSatisfied }
+    }
+
+    var hasBlockingIssues: Bool {
+        !missingRequiredChecks.isEmpty
+    }
+}
+
+protocol ModelBundleInspector {
+    var displayName: String { get }
+
+    func canInspect(profile: CoreAIExternalModelProfile) -> Bool
+
+    func inspect(
+        profile: CoreAIExternalModelProfile,
+        bundleRootURL: URL?,
+        fileManager: FileManager
+    ) -> ModelBundleInspectionResult
+}
+
+struct GenericCoreAIModelBundleInspector: ModelBundleInspector {
+    struct ExpectedPath {
+        var id: String
+        var title: String
+        var relativePath: String?
+        var expectedKind: ArtifactCheckExpectedKind
+        var required: Bool
+    }
+
+    let displayName: String
+    private let matcher: (CoreAIExternalModelProfile) -> Bool
+    private let expectedPaths: (CoreAIExternalModelProfile) -> [ExpectedPath]
+
+    init(
+        displayName: String,
+        matcher: @escaping (CoreAIExternalModelProfile) -> Bool,
+        expectedPaths: @escaping (CoreAIExternalModelProfile) -> [ExpectedPath]
+    ) {
+        self.displayName = displayName
+        self.matcher = matcher
+        self.expectedPaths = expectedPaths
+    }
+
+    func canInspect(profile: CoreAIExternalModelProfile) -> Bool {
+        matcher(profile)
+    }
+
+    func inspect(
+        profile: CoreAIExternalModelProfile,
+        bundleRootURL: URL?,
+        fileManager: FileManager = .default
+    ) -> ModelBundleInspectionResult {
+        let checks = expectedPaths(profile).map { expectedPath -> ArtifactCheckResult in
+            let targetURL = resolvedURL(for: expectedPath, bundleRootURL: bundleRootURL)
+            let exists = targetURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+            let isDirectory = targetURL.flatMap {
+                try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
+            }
+            let kindMatches: Bool
+            if let isDirectory {
+                kindMatches = expectedPath.expectedKind == .directory ? isDirectory : !isDirectory
+            } else {
+                kindMatches = false
+            }
+
+            return ArtifactCheckResult(
+                id: expectedPath.id,
+                title: expectedPath.title,
+                relativePath: expectedPath.relativePath,
+                expectedKind: expectedPath.expectedKind,
+                required: expectedPath.required,
+                actualURL: targetURL,
+                exists: exists,
+                kindMatches: kindMatches,
+                isDirectory: isDirectory
+            )
+        }
+
+        return ModelBundleInspectionResult(
+            inspectorName: displayName,
+            bundleRootURL: bundleRootURL,
+            checks: checks
+        )
+    }
+
+    private func resolvedURL(
+        for expectedPath: ExpectedPath,
+        bundleRootURL: URL?
+    ) -> URL? {
+        guard let bundleRootURL else { return nil }
+        guard let relativePath = expectedPath.relativePath else { return bundleRootURL }
+        return bundleRootURL.appendingPathComponent(relativePath)
+    }
+}
+
+struct QwenCoreAIModelBundleInspector: ModelBundleInspector {
+    let displayName = "Qwen Core AI Model Bundle Inspector"
+
+    private let genericInspector = GenericCoreAIModelBundleInspector(
+        displayName: "Qwen Core AI Model Bundle Inspector",
+        matcher: { profile in
+            profile.id == "qwen3_5_0_8b_coreai_pipelined"
+        },
+        expectedPaths: { _ in
+            [
+                .init(id: "bundle_root", title: "Bundle root", relativePath: nil, expectedKind: .directory, required: true),
+                .init(id: "bundle_metadata", title: "metadata.json", relativePath: "metadata.json", expectedKind: .file, required: true),
+                .init(
+                    id: "language_model_aimodel",
+                    title: "Language model .aimodel",
+                    relativePath: "qwen3_5_0_8b_decode_int8hu_perchan_sym.aimodel",
+                    expectedKind: .directory,
+                    required: true
+                ),
+                .init(id: "tokenizer_directory", title: "Tokenizer directory", relativePath: "tokenizer", expectedKind: .directory, required: true),
+                .init(id: "tokenizer_json", title: "tokenizer.json", relativePath: "tokenizer/tokenizer.json", expectedKind: .file, required: true),
+                .init(id: "chat_template", title: "chat_template.jinja", relativePath: "tokenizer/chat_template.jinja", expectedKind: .file, required: true),
+                .init(id: "tokenizer_config", title: "tokenizer_config.json", relativePath: "tokenizer/tokenizer_config.json", expectedKind: .file, required: true),
+                .init(id: "special_tokens_map", title: "special_tokens_map.json", relativePath: "tokenizer/special_tokens_map.json", expectedKind: .file, required: true),
+            ]
+        }
+    )
+
+    func canInspect(profile: CoreAIExternalModelProfile) -> Bool {
+        genericInspector.canInspect(profile: profile)
+    }
+
+    func inspect(
+        profile: CoreAIExternalModelProfile,
+        bundleRootURL: URL?,
+        fileManager: FileManager = .default
+    ) -> ModelBundleInspectionResult {
+        genericInspector.inspect(
+            profile: profile,
+            bundleRootURL: bundleRootURL,
+            fileManager: fileManager
+        )
+    }
+}
+
 struct CoreAIGenerationRequest: Equatable {
     var model: CoreAIExternalModelProfile
     var messages: [CoreAIChatTurn]
@@ -279,6 +452,7 @@ struct CoreAIRunnerPreflightResult: Codable, Equatable, Hashable {
     var readiness: CoreAIRunnerReadiness
     var runnerName: String
     var findings: [CoreAIRunnerFinding]
+    var bundleInspection: ModelBundleInspectionResult?
 
     var canGenerate: Bool {
         readiness == .ready || readiness == .experimental
@@ -288,8 +462,17 @@ struct CoreAIRunnerPreflightResult: Codable, Equatable, Hashable {
         findings.filter { $0.severity == .error }
     }
 
-    static func ready(runnerName: String, findings: [CoreAIRunnerFinding] = []) -> CoreAIRunnerPreflightResult {
-        CoreAIRunnerPreflightResult(readiness: .ready, runnerName: runnerName, findings: findings)
+    static func ready(
+        runnerName: String,
+        findings: [CoreAIRunnerFinding] = [],
+        bundleInspection: ModelBundleInspectionResult? = nil
+    ) -> CoreAIRunnerPreflightResult {
+        CoreAIRunnerPreflightResult(
+            readiness: .ready,
+            runnerName: runnerName,
+            findings: findings,
+            bundleInspection: bundleInspection
+        )
     }
 }
 
@@ -365,6 +548,41 @@ enum CoreAIRunnerPreflightSupport {
         return findings
     }
 
+    static func inspectionFindings(
+        inspectionResult: ModelBundleInspectionResult?
+    ) -> [CoreAIRunnerFinding] {
+        guard let inspectionResult else { return [] }
+
+        return inspectionResult.checks.map { check in
+            if check.isSatisfied {
+                return CoreAIRunnerFinding(
+                    severity: .info,
+                    code: "\(check.id)_found",
+                    message: "\(check.title) found."
+                )
+            }
+
+            let message: String
+            if check.exists && !check.kindMatches {
+                message = "\(check.title) exists but is not a \(check.expectedKind.rawValue)."
+            } else {
+                message = "\(check.title) missing."
+            }
+
+            let remediation = inspectionRemediation(
+                for: check,
+                bundleRootURL: inspectionResult.bundleRootURL
+            )
+
+            return CoreAIRunnerFinding(
+                severity: check.required ? .error : .warning,
+                code: "\(check.id)_missing",
+                message: message,
+                remediation: remediation
+            )
+        }
+    }
+
     static func readinessForAdapterStatus(_ status: CoreAIRuntimeStatus) -> CoreAIRunnerReadiness {
         switch status {
         case .ready:
@@ -376,6 +594,17 @@ enum CoreAIRunnerPreflightSupport {
         case .unsupported:
             return .unsupported
         }
+    }
+
+    private static func inspectionRemediation(
+        for check: ArtifactCheckResult,
+        bundleRootURL: URL?
+    ) -> String? {
+        guard check.required else { return nil }
+        if let bundleRootURL {
+            return "Ensure '\(check.expectedLocationDescription)' exists inside '\(bundleRootURL.path)'."
+        }
+        return "Install the local model bundle before using this runner."
     }
 }
 
@@ -389,7 +618,8 @@ protocol CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult
 
     func generate(
@@ -405,7 +635,8 @@ extension CoreAIModelRunner {
     func basePreflight(
         profile: CoreAIExternalModelProfile,
         localArtifacts: [CoreAIResolvedArtifact],
-        runnerName: String
+        runnerName: String,
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         var findings: [CoreAIRunnerFinding] = []
 
@@ -415,19 +646,24 @@ extension CoreAIModelRunner {
         ))
 
         findings.append(contentsOf: CoreAIRunnerPreflightSupport.runtimeFieldFindings(profile: profile))
+        findings.append(contentsOf: CoreAIRunnerPreflightSupport.inspectionFindings(
+            inspectionResult: bundleInspection
+        ))
 
         if findings.contains(where: { $0.severity == .error }) {
             return CoreAIRunnerPreflightResult(
                 readiness: .missingArtifacts,
                 runnerName: runnerName,
-                findings: findings
+                findings: findings,
+                bundleInspection: bundleInspection
             )
         }
 
         return CoreAIRunnerPreflightResult(
             readiness: CoreAIRunnerPreflightSupport.readinessForAdapterStatus(profile.runtime.status),
             runnerName: runnerName,
-            findings: findings
+            findings: findings,
+            bundleInspection: bundleInspection
         )
     }
 }
@@ -446,12 +682,16 @@ struct CoreAIAdapterRequiredRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         var findings = CoreAIRunnerPreflightSupport.artifactFindings(
             profile: profile,
             localArtifacts: localArtifacts
         )
+        findings.append(contentsOf: CoreAIRunnerPreflightSupport.inspectionFindings(
+            inspectionResult: bundleInspection
+        ))
 
         findings.append(
             CoreAIRunnerFinding(
@@ -462,10 +702,15 @@ struct CoreAIAdapterRequiredRunner: CoreAIModelRunner {
             )
         )
 
+        let readiness: CoreAIRunnerReadiness = findings.contains(where: { $0.severity == .error && $0.code != "adapter_required" })
+            ? .missingArtifacts
+            : .adapterRequired
+
         return CoreAIRunnerPreflightResult(
-            readiness: .adapterRequired,
+            readiness: readiness,
             runnerName: displayName,
-            findings: findings
+            findings: findings,
+            bundleInspection: bundleInspection
         )
     }
 
@@ -495,19 +740,25 @@ struct CoreAIUnsupportedRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
-        CoreAIRunnerPreflightResult(
+        let findings = CoreAIRunnerPreflightSupport.inspectionFindings(
+            inspectionResult: bundleInspection
+        ) + [
+            CoreAIRunnerFinding(
+                severity: .error,
+                code: "unsupported_adapter",
+                message: "The runtime adapter '\(profile.runtime.adapter.rawValue)' is unsupported by this app.",
+                remediation: "Choose another model or add a supported runtime adapter."
+            )
+        ]
+
+        return CoreAIRunnerPreflightResult(
             readiness: .unsupported,
             runnerName: displayName,
-            findings: [
-                CoreAIRunnerFinding(
-                    severity: .error,
-                    code: "unsupported_adapter",
-                    message: "The runtime adapter '\(profile.runtime.adapter.rawValue)' is unsupported by this app.",
-                    remediation: "Choose another model or add a supported runtime adapter."
-                )
-            ]
+            findings: findings,
+            bundleInspection: bundleInspection
         )
     }
 
@@ -531,7 +782,8 @@ struct CoreAIMockExternalCatalogRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         CoreAIRunnerPreflightResult.ready(
             runnerName: displayName,
@@ -541,7 +793,8 @@ struct CoreAIMockExternalCatalogRunner: CoreAIModelRunner {
                     code: "mock_runtime",
                     message: "Mock runner is active. No real Core AI model execution will occur."
                 )
-            ]
+            ],
+            bundleInspection: bundleInspection
         )
     }
 
@@ -582,10 +835,15 @@ struct CoreAIMockExternalCatalogRunner: CoreAIModelRunner {
 // MARK: - Registry
 
 final class CoreAIModelRunnerRegistry {
-    private var runners: [CoreAIRuntimeAdapter: CoreAIModelRunner]
+    private var runnerFactories: [CoreAIRuntimeAdapter: () -> any CoreAIModelRunner]
+    private var bundleInspectors: [any ModelBundleInspector]
 
-    init(runners: [CoreAIModelRunner] = []) {
-        self.runners = [:]
+    init(
+        runners: [CoreAIModelRunner] = [],
+        bundleInspectors: [any ModelBundleInspector] = []
+    ) {
+        self.runnerFactories = [:]
+        self.bundleInspectors = bundleInspectors
         runners.forEach { register($0) }
     }
 
@@ -598,12 +856,23 @@ final class CoreAIModelRunnerRegistry {
     }
 
     func register(_ runner: CoreAIModelRunner) {
-        runners[runner.supportedAdapter] = runner
+        runnerFactories[runner.supportedAdapter] = { runner }
+    }
+
+    func register(
+        adapter: CoreAIRuntimeAdapter,
+        makeRunner: @escaping () -> any CoreAIModelRunner
+    ) {
+        runnerFactories[adapter] = makeRunner
+    }
+
+    func registerBundleInspector(_ inspector: any ModelBundleInspector) {
+        bundleInspectors.append(inspector)
     }
 
     func runner(for profile: CoreAIExternalModelProfile) -> CoreAIModelRunner {
-        if let runner = runners[profile.runtime.adapter] {
-            return runner
+        if let makeRunner = runnerFactories[profile.runtime.adapter] {
+            return makeRunner()
         }
 
         if profile.runtime.status == .unsupported {
@@ -613,11 +882,38 @@ final class CoreAIModelRunnerRegistry {
         return CoreAIAdapterRequiredRunner(adapter: profile.runtime.adapter)
     }
 
+    func bundleInspector(for profile: CoreAIExternalModelProfile) -> (any ModelBundleInspector)? {
+        bundleInspectors.first(where: { $0.canInspect(profile: profile) })
+    }
+
+    func inspectBundle(
+        profile: CoreAIExternalModelProfile,
+        bundleRootURL: URL?,
+        fileManager: FileManager = .default
+    ) -> ModelBundleInspectionResult? {
+        bundleInspector(for: profile)?.inspect(
+            profile: profile,
+            bundleRootURL: bundleRootURL,
+            fileManager: fileManager
+        )
+    }
+
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleRootURL: URL? = nil,
+        fileManager: FileManager = .default
     ) -> CoreAIRunnerPreflightResult {
-        runner(for: profile).preflight(profile: profile, localArtifacts: localArtifacts)
+        let inspection = inspectBundle(
+            profile: profile,
+            bundleRootURL: bundleRootURL,
+            fileManager: fileManager
+        )
+        return runner(for: profile).preflight(
+            profile: profile,
+            localArtifacts: localArtifacts,
+            bundleInspection: inspection
+        )
     }
 
     func generate(

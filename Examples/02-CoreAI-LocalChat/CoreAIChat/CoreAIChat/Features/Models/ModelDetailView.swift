@@ -192,6 +192,34 @@ struct ModelDetailView: View {
                         StatusBadgeView(title: preflight.runnerName, systemImage: "gearshape.2", tint: AppColors.neutral)
                     }
 
+                    if let inspection = preflight.bundleInspection {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            StatusBadgeView(
+                                title: inspection.inspectorName,
+                                systemImage: "shippingbox",
+                                tint: AppColors.neutral
+                            )
+
+                            ForEach(inspection.checks) { check in
+                                VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                                    HStack(spacing: AppSpacing.sm) {
+                                        StatusBadgeView(
+                                            title: check.isSatisfied ? "Found" : "Missing",
+                                            systemImage: check.isSatisfied ? "checkmark.circle.fill" : "xmark.octagon.fill",
+                                            tint: check.isSatisfied ? AppColors.success : AppColors.warning
+                                        )
+                                        Text(check.title)
+                                            .font(.subheadline.weight(.semibold))
+                                    }
+
+                                    Text(inspectionPathText(for: check))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+
                     ForEach(preflight.findings) { finding in
                         VStack(alignment: .leading, spacing: AppSpacing.xs) {
                             HStack(spacing: AppSpacing.sm) {
@@ -468,6 +496,13 @@ struct ModelDetailView: View {
     private func runtimeFlagsText(_ flags: [CoreAIRuntimeFlag]) -> String {
         guard !flags.isEmpty else { return "None" }
         return flags.map { "\($0.name)=\($0.value)" }.joined(separator: ", ")
+    }
+
+    private func inspectionPathText(for check: ArtifactCheckResult) -> String {
+        let location = check.relativePath ?? "bundle root"
+        let expectedKind = check.expectedKind == .directory ? "directory" : "file"
+        let resolvedPath = check.actualURL?.path ?? "No resolved local path"
+        return "\(location) • expected \(expectedKind) • \(resolvedPath)"
     }
 
     private func metadataItem(_ title: String, _ value: String) -> some View {

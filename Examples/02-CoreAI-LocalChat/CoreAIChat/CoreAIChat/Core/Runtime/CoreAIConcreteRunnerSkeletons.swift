@@ -29,11 +29,12 @@ extension CoreAIModelRunnerRegistry {
     static func knownExternalModelRegistry() -> CoreAIModelRunnerRegistry {
         let registry = CoreAIModelRunnerRegistry.baseRegistry()
 
-        registry.register(CoreAIPipelinedNStateTextRunner())
-        registry.register(CoreAIPipelinedExtraStateTextRunner())
-        registry.register(Gemma4MultiStagePipelinedTextRunner())
-        registry.register(CoreAIPipelinedVisionLanguageRunner())
-        registry.register(CoreAIStandardLanguageModelRunner())
+        registry.register(adapter: .coreaiPipelinedNStateText) { CoreAIPipelinedNStateTextRunner() }
+        registry.register(adapter: .coreaiPipelinedExtraStateText) { CoreAIPipelinedExtraStateTextRunner() }
+        registry.register(adapter: .gemma4MultiStagePipelinedText) { Gemma4MultiStagePipelinedTextRunner() }
+        registry.register(adapter: .coreaiPipelinedVisionLanguage) { CoreAIPipelinedVisionLanguageRunner() }
+        registry.register(adapter: .coreaiStandardLanguageModel) { CoreAIStandardLanguageModelRunner() }
+        registry.registerBundleInspector(QwenCoreAIModelBundleInspector())
 
         return registry
     }
@@ -85,9 +86,10 @@ enum CoreAIConcreteRunnerSupport {
     static func preflightForRecognizedAdapter(
         profile: CoreAIExternalModelProfile,
         localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?,
         runnerName: String,
         expectedAdapter: CoreAIRuntimeAdapter,
-        requiredArtifactRoles: [CoreAIArtifactRole],
+        requiredArtifactRoleAlternatives: [[CoreAIArtifactRole]],
         requiredInputNames: [String] = [],
         requiredOutputNames: [String] = [],
         minimumStateCount: Int? = nil
@@ -104,6 +106,10 @@ enum CoreAIConcreteRunnerSupport {
                 )
             )
         }
+
+        findings.append(contentsOf: CoreAIRunnerPreflightSupport.inspectionFindings(
+            inspectionResult: bundleInspection
+        ))
 
         let missingArtifacts = CoreAIRunnerPreflightSupport.missingRequiredArtifacts(
             profile: profile,
@@ -122,12 +128,14 @@ enum CoreAIConcreteRunnerSupport {
         }
 
         let artifactRoles = Set(profile.requiredArtifacts.map(\.role))
-        for role in requiredArtifactRoles where !artifactRoles.contains(role) {
+        for roleGroup in requiredArtifactRoleAlternatives
+        where artifactRoles.isDisjoint(with: roleGroup) {
+            let roleList = roleGroup.map(\.rawValue).joined(separator: " or ")
             findings.append(
                 CoreAIRunnerFinding(
                     severity: .warning,
                     code: "missing_expected_artifact_role",
-                    message: "Manifest does not include expected artifact role '\(role.rawValue)'.",
+                    message: "Manifest does not include expected artifact role '\(roleList)'.",
                     remediation: "Verify the model manifest against the model card/runtime contract."
                 )
             )
@@ -170,7 +178,8 @@ enum CoreAIConcreteRunnerSupport {
             return CoreAIRunnerPreflightResult(
                 readiness: .missingArtifacts,
                 runnerName: runnerName,
-                findings: findings
+                findings: findings,
+                bundleInspection: bundleInspection
             )
         }
 
@@ -192,7 +201,8 @@ enum CoreAIConcreteRunnerSupport {
         return CoreAIRunnerPreflightResult(
             readiness: readiness,
             runnerName: runnerName,
-            findings: finalFindings
+            findings: finalFindings,
+            bundleInspection: bundleInspection
         )
     }
 }
@@ -205,14 +215,16 @@ struct CoreAIPipelinedNStateTextRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
+            bundleInspection: bundleInspection,
             runnerName: displayName,
             expectedAdapter: supportedAdapter,
-            requiredArtifactRoles: [.languageBundle],
+            requiredArtifactRoleAlternatives: [[.languageBundle, .languageDecoder]],
             requiredInputNames: ["input_ids"],
             requiredOutputNames: ["logits"],
             minimumStateCount: 1
@@ -240,14 +252,16 @@ struct CoreAIPipelinedExtraStateTextRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
+            bundleInspection: bundleInspection,
             runnerName: displayName,
             expectedAdapter: supportedAdapter,
-            requiredArtifactRoles: [.languageBundle],
+            requiredArtifactRoleAlternatives: [[.languageBundle, .languageDecoder]],
             requiredInputNames: ["input_ids"],
             requiredOutputNames: ["logits"],
             minimumStateCount: 2
@@ -275,14 +289,16 @@ struct Gemma4MultiStagePipelinedTextRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
+            bundleInspection: bundleInspection,
             runnerName: displayName,
             expectedAdapter: supportedAdapter,
-            requiredArtifactRoles: [.languageBundle, .frontendGather],
+            requiredArtifactRoleAlternatives: [[.languageBundle, .languageDecoder], [.frontendGather]],
             requiredInputNames: ["input_ids"],
             requiredOutputNames: ["logits"],
             minimumStateCount: 2
@@ -310,14 +326,16 @@ struct CoreAIPipelinedVisionLanguageRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         var result = CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
+            bundleInspection: bundleInspection,
             runnerName: displayName,
             expectedAdapter: supportedAdapter,
-            requiredArtifactRoles: [.languageBundle, .visionEncoder],
+            requiredArtifactRoleAlternatives: [[.languageBundle, .languageDecoder], [.visionEncoder]],
             requiredInputNames: ["input_ids"],
             requiredOutputNames: ["logits"],
             minimumStateCount: 1
@@ -358,14 +376,16 @@ struct CoreAIStandardLanguageModelRunner: CoreAIModelRunner {
 
     func preflight(
         profile: CoreAIExternalModelProfile,
-        localArtifacts: [CoreAIResolvedArtifact]
+        localArtifacts: [CoreAIResolvedArtifact],
+        bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
         CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
+            bundleInspection: bundleInspection,
             runnerName: displayName,
             expectedAdapter: supportedAdapter,
-            requiredArtifactRoles: [.languageBundle],
+            requiredArtifactRoleAlternatives: [[.languageBundle, .languageDecoder]],
             requiredInputNames: [],
             requiredOutputNames: [],
             minimumStateCount: nil
