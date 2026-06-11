@@ -29,7 +29,7 @@
       "license": "Apache-2.0",
       "description": "Small text-to-text Core AI LanguageBundle. Good first external model target because it is small, Apache-2.0, and has a documented Core AI pipelined path.",
       "source": {
-        "provider": "coreai-model-zoo / Hugging Face",
+        "provider": "coreai-model-zoo / mlboydaisuke",
         "repositoryURL": "https://huggingface.co/mlboydaisuke/qwen3.5-0.8B-CoreAI",
         "modelCardURL": "https://huggingface.co/mlboydaisuke/qwen3.5-0.8B-CoreAI",
         "upstreamModelURL": "https://huggingface.co/Qwen/Qwen3.5-0.8B",
