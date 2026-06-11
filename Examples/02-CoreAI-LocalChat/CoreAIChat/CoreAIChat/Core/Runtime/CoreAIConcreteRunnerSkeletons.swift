@@ -23,6 +23,253 @@ import Foundation
 import CoreAI
 #endif
 
+private enum Qwen35CoreAIRunnerSupport {
+    static let modelID = "qwen3_5_0_8b_coreai_pipelined"
+    static let metadataArtifactID = "bundle_metadata"
+    static let aimodelArtifactID = "language_model_aimodel"
+    static let tokenizerArtifactID = "tokenizer_directory"
+    static let languageBundleBlockerReason = "The documented app path requires `LanguageBundle` and `EngineFactory.createEngine`, but those public APIs are not present in the installed Xcode 27 beta SDK."
+    static let tokenizerBlockerReason = "The bundle contains tokenizer files, but the installed SDK does not expose a public Apple tokenizer/chat-template API for converting prompts into `input_ids`."
+
+    struct BundlePaths {
+        var bundleRootURL: URL?
+        var metadataURL: URL?
+        var aimodelURL: URL?
+        var tokenizerDirectoryURL: URL?
+    }
+
+    struct BundleMetadata: Decodable, Equatable {
+        struct Assets: Decodable, Equatable {
+            var main: String
+        }
+
+        struct Language: Decodable, Equatable {
+            var tokenizer: String?
+            var embeddedTokenizer: Bool?
+            var functionMap: [String: [String]]?
+
+            enum CodingKeys: String, CodingKey {
+                case tokenizer
+                case embeddedTokenizer = "embedded_tokenizer"
+                case functionMap = "function_map"
+            }
+        }
+
+        var name: String
+        var assets: Assets
+        var language: Language?
+    }
+
+    static func applies(to profile: CoreAIExternalModelProfile) -> Bool {
+        profile.id == modelID
+    }
+
+    static func bundlePaths(from artifacts: [CoreAIResolvedArtifact]) -> BundlePaths {
+        let metadataURL = artifacts.first(where: { $0.id == metadataArtifactID && $0.exists })?.localURL
+        let aimodelURL = artifacts.first(where: { $0.id == aimodelArtifactID && $0.exists })?.localURL
+        let tokenizerDirectoryURL = artifacts.first(where: { $0.id == tokenizerArtifactID && $0.exists })?.localURL
+
+        let bundleRootURL = metadataURL?.deletingLastPathComponent()
+            ?? tokenizerDirectoryURL?.deletingLastPathComponent()
+            ?? aimodelURL?.deletingLastPathComponent()
+
+        return BundlePaths(
+            bundleRootURL: bundleRootURL,
+            metadataURL: metadataURL,
+            aimodelURL: aimodelURL,
+            tokenizerDirectoryURL: tokenizerDirectoryURL
+        )
+    }
+
+    static func loadBundleMetadata(from metadataURL: URL) throws -> BundleMetadata {
+        let data = try Data(contentsOf: metadataURL)
+        return try JSONDecoder().decode(BundleMetadata.self, from: data)
+    }
+
+    static func preflight(
+        base: CoreAIRunnerPreflightResult,
+        profile: CoreAIExternalModelProfile,
+        localArtifacts: [CoreAIResolvedArtifact]
+    ) -> CoreAIRunnerPreflightResult {
+        guard applies(to: profile) else { return base }
+
+        let paths = bundlePaths(from: localArtifacts)
+        var findings = base.findings.filter { $0.code != "generation_not_implemented" }
+
+        if let metadataURL = paths.metadataURL {
+            do {
+                let metadata = try loadBundleMetadata(from: metadataURL)
+                findings.append(
+                    CoreAIRunnerFinding(
+                        severity: .info,
+                        code: "bundle_metadata_loaded",
+                        message: "Loaded Qwen bundle metadata. main asset=\(metadata.assets.main)"
+                    )
+                )
+
+                if let embeddedTokenizer = metadata.language?.embeddedTokenizer {
+                    findings.append(
+                        CoreAIRunnerFinding(
+                            severity: .info,
+                            code: "bundle_embedded_tokenizer_flag",
+                            message: "Bundle metadata reports embedded_tokenizer=\(embeddedTokenizer ? "true" : "false")."
+                        )
+                    )
+                }
+            } catch {
+                findings.append(
+                    CoreAIRunnerFinding(
+                        severity: .warning,
+                        code: "bundle_metadata_unreadable",
+                        message: "Bundle metadata exists but could not be decoded: \(error.localizedDescription)"
+                    )
+                )
+            }
+        }
+
+        #if canImport(CoreAI) && !targetEnvironment(simulator)
+        if #available(macOS 27.0, iOS 27.0, *) {
+            findings.append(
+                CoreAIRunnerFinding(
+                    severity: .info,
+                    code: "device_low_level_coreai_probe_available",
+                    message: "The installed SDK exposes a device-only low-level probe path through `AIModel(contentsOf:)` and `loadFunction(named:)`."
+                )
+            )
+        } else {
+            findings.append(
+                CoreAIRunnerFinding(
+                    severity: .warning,
+                    code: "coreai_unavailable_on_current_target",
+                    message: "This runtime environment does not satisfy Core AI's macOS 27 / iOS 27 availability requirements.",
+                    remediation: "Keep mock/fallback behavior here and verify lower-level probing on a supported OS/device build."
+                )
+            )
+        }
+        #else
+        findings.append(
+            CoreAIRunnerFinding(
+                severity: .warning,
+                code: "coreai_unavailable_on_current_target",
+                message: "This build target cannot import `CoreAI`. The iPhone Simulator SDK in Xcode 27 beta does not ship `CoreAI.framework`.",
+                remediation: "Keep mock/fallback behavior for simulator builds and verify lower-level probing on a device build."
+            )
+        )
+        #endif
+
+        findings.append(
+            CoreAIRunnerFinding(
+                severity: .warning,
+                code: "language_bundle_api_missing",
+                message: languageBundleBlockerReason,
+                remediation: "Wait for a public SDK that exposes the documented app-level Core AI pipeline."
+            )
+        )
+
+        findings.append(
+            CoreAIRunnerFinding(
+                severity: .warning,
+                code: "tokenizer_api_missing",
+                message: tokenizerBlockerReason,
+                remediation: "Do not route live chat traffic into this runner until Apple ships a public tokenizer/runtime wrapper."
+            )
+        )
+
+        let readiness: CoreAIRunnerReadiness = base.readiness == .missingArtifacts
+            ? .missingArtifacts
+            : .adapterRequired
+
+        return CoreAIRunnerPreflightResult(
+            readiness: readiness,
+            runnerName: base.runnerName,
+            findings: findings,
+            bundleInspection: base.bundleInspection
+        )
+    }
+
+    static func generationBlockedStream(
+        request: CoreAIGenerationRequest,
+        runnerName: String
+    ) -> AsyncThrowingStream<CoreAIGenerationEvent, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                continuation.yield(.started(modelId: request.model.id))
+
+                let paths = bundlePaths(from: request.localArtifacts)
+                if let metadataURL = paths.metadataURL {
+                    do {
+                        let metadata = try loadBundleMetadata(from: metadataURL)
+                        continuation.yield(.diagnostic("bundle.metadata.name=\(metadata.name)"))
+                        continuation.yield(.diagnostic("bundle.metadata.main=\(metadata.assets.main)"))
+                    } catch {
+                        continuation.yield(.diagnostic("bundle.metadata.decode_failed=\(error.localizedDescription)"))
+                    }
+                }
+
+                if let aimodelURL = paths.aimodelURL {
+                    continuation.yield(.diagnostic("bundle.aimodel=\(aimodelURL.lastPathComponent)"))
+                }
+                if let tokenizerDirectoryURL = paths.tokenizerDirectoryURL {
+                    continuation.yield(.diagnostic("bundle.tokenizer=\(tokenizerDirectoryURL.lastPathComponent)"))
+                }
+
+                #if canImport(CoreAI) && !targetEnvironment(simulator)
+                if #available(macOS 27.0, iOS 27.0, *) {
+                    if let aimodelURL = paths.aimodelURL {
+                        do {
+                            let diagnostics = try await probeLowLevelCoreAIModel(
+                                aimodelURL: aimodelURL,
+                                functionName: request.model.runtime.functionName
+                            )
+                            diagnostics.forEach { continuation.yield(.diagnostic($0)) }
+                        } catch {
+                            continuation.finish(throwing: error)
+                            return
+                        }
+                    }
+                } else {
+                    continuation.yield(.diagnostic("coreai.target=below-minimum-os"))
+                }
+                #else
+                continuation.yield(.diagnostic("coreai.target=unavailable"))
+                #endif
+
+                continuation.yield(.diagnostic("runner=\(runnerName)"))
+                continuation.yield(.diagnostic("blocker=\(languageBundleBlockerReason)"))
+                continuation.yield(.diagnostic("blocker=\(tokenizerBlockerReason)"))
+                continuation.finish(
+                    throwing: CoreAIModelRunnerError.runtimeAPINotAvailable(
+                        modelName: request.model.name,
+                        reason: "\(languageBundleBlockerReason) \(tokenizerBlockerReason)"
+                    )
+                )
+            }
+        }
+    }
+
+    #if canImport(CoreAI) && !targetEnvironment(simulator)
+    @available(macOS 27.0, iOS 27.0, *)
+    private static func probeLowLevelCoreAIModel(
+        aimodelURL: URL,
+        functionName: String
+    ) async throws -> [String] {
+        let model = try await AIModel(contentsOf: aimodelURL)
+        guard let _ = try model.loadFunction(named: functionName) else {
+            throw CoreAIModelRunnerError.invalidRuntimeProfile(
+                modelName: modelID,
+                reason: "CoreAI loaded the `.aimodel`, but function '\(functionName)' could not be opened."
+            )
+        }
+
+        return [
+            "coreai.low_level_probe=loaded",
+            "coreai.function_names=\(model.functionNames.joined(separator: ","))",
+            "coreai.function_opened=\(functionName)"
+        ]
+    }
+    #endif
+}
+
 // MARK: - Registry With Known Adapter Skeletons
 
 extension CoreAIModelRunnerRegistry {
@@ -218,7 +465,7 @@ struct CoreAIPipelinedNStateTextRunner: CoreAIModelRunner {
         localArtifacts: [CoreAIResolvedArtifact],
         bundleInspection: ModelBundleInspectionResult?
     ) -> CoreAIRunnerPreflightResult {
-        CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
+        let base = CoreAIConcreteRunnerSupport.preflightForRecognizedAdapter(
             profile: profile,
             localArtifacts: localArtifacts,
             bundleInspection: bundleInspection,
@@ -229,12 +476,25 @@ struct CoreAIPipelinedNStateTextRunner: CoreAIModelRunner {
             requiredOutputNames: ["logits"],
             minimumStateCount: 1
         )
+
+        return Qwen35CoreAIRunnerSupport.preflight(
+            base: base,
+            profile: profile,
+            localArtifacts: localArtifacts
+        )
     }
 
     func generate(
         request: CoreAIGenerationRequest
     ) -> AsyncThrowingStream<CoreAIGenerationEvent, Error> {
-        CoreAIConcreteRunnerSupport.finishAsNotImplemented(
+        if Qwen35CoreAIRunnerSupport.applies(to: request.model) {
+            return Qwen35CoreAIRunnerSupport.generationBlockedStream(
+                request: request,
+                runnerName: displayName
+            )
+        }
+
+        return CoreAIConcreteRunnerSupport.finishAsNotImplemented(
             request: request,
             runnerName: displayName,
             extraDiagnostics: [

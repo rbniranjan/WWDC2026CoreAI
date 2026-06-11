@@ -391,6 +391,7 @@ enum CoreAIModelRunnerError: Error, LocalizedError, Equatable {
     case unsupportedModel(adapter: String, modelName: String)
     case missingRequiredArtifacts(modelName: String, missingArtifactIds: [String])
     case invalidRuntimeProfile(modelName: String, reason: String)
+    case runtimeAPINotAvailable(modelName: String, reason: String)
     case cancelled
 
     var errorDescription: String? {
@@ -403,6 +404,8 @@ enum CoreAIModelRunnerError: Error, LocalizedError, Equatable {
             return "\(modelName) is missing required artifacts: \(missingArtifactIds.joined(separator: ", "))."
         case .invalidRuntimeProfile(let modelName, let reason):
             return "\(modelName) has an invalid runtime profile: \(reason)."
+        case .runtimeAPINotAvailable(let modelName, let reason):
+            return "\(modelName) cannot use the installed Core AI runtime APIs yet: \(reason)"
         case .cancelled:
             return "Generation was cancelled."
         }

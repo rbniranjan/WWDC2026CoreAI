@@ -45,7 +45,8 @@ struct ExternalModelCatalogTests {
 
         #expect(result.readiness == .adapterRequired)
         #expect(result.runnerName.contains("N-State"))
-        #expect(result.findings.contains(where: { $0.code == "generation_not_implemented" }))
+        #expect(result.findings.contains(where: { $0.code == "language_bundle_api_missing" }))
+        #expect(result.findings.contains(where: { $0.code == "tokenizer_api_missing" }))
         #expect(result.bundleInspection?.checks.allSatisfy { $0.isSatisfied } == true)
     }
 
@@ -58,6 +59,74 @@ struct ExternalModelCatalogTests {
 
         #expect(result.readiness == .missingArtifacts)
         #expect(result.blockingFindings.contains(where: { $0.code == "missing_artifact" }))
+    }
+
+    @Test func qwenGeneratePathStopsAtDocumentedBlockerWithoutFakeCompletion() async throws {
+        let catalog = try loadExternalCatalog()
+        let model = try #require(catalog.models.first(where: { $0.id == "qwen3_5_0_8b_coreai_pipelined" }))
+        let registry = CoreAIModelRunnerRegistry.knownExternalModelRegistry()
+        let bundleRootURL = try makeCompleteQwenBundle()
+        defer { try? FileManager.default.removeItem(at: bundleRootURL.deletingLastPathComponent()) }
+
+        let artifacts = model.artifacts.map { artifact in
+            CoreAIResolvedArtifact(
+                id: artifact.id,
+                artifactRole: artifact.role,
+                expectedDirectoryName: artifact.manualInstallDirectoryName,
+                localURL: resolvedLocalURL(for: artifact, bundleRootURL: bundleRootURL),
+                exists: true,
+                isDirectory: artifact.role != .metadata
+            )
+        }
+
+        let request = CoreAIGenerationRequest(
+            model: model,
+            messages: [
+                CoreAIChatTurn(role: .user, content: "Hello")
+            ],
+            localArtifacts: artifacts
+        )
+
+        var sawStarted = false
+        var sawCompleted = false
+        var diagnostics: [String] = []
+        var capturedError: Error?
+
+        do {
+            for try await event in registry.generate(request: request) {
+                switch event {
+                case .started:
+                    sawStarted = true
+                case .completed:
+                    sawCompleted = true
+                case .diagnostic(let message):
+                    diagnostics.append(message)
+                default:
+                    break
+                }
+            }
+        } catch {
+            capturedError = error
+        }
+
+        #expect(sawStarted)
+        #expect(!sawCompleted)
+        #expect(diagnostics.contains(where: { $0.hasPrefix("bundle.metadata.") }))
+        #expect(diagnostics.contains(where: { $0.contains("blocker=") }))
+
+        switch capturedError {
+        case let error as CoreAIModelRunnerError:
+            switch error {
+            case .runtimeAPINotAvailable(let modelName, let reason):
+                #expect(modelName == model.name)
+                #expect(reason.contains("LanguageBundle"))
+                #expect(reason.contains("tokenizer"))
+            default:
+                Issue.record("Unexpected runner error: \(error)")
+            }
+        default:
+            Issue.record("Expected CoreAIModelRunnerError.runtimeAPINotAvailable")
+        }
     }
 
     private func loadExternalCatalog() throws -> CoreAIExternalModelCatalog {
