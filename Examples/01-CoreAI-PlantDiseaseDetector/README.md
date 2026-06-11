@@ -1,14 +1,24 @@
-# Core AI Plant Disease Detector
+# 01-CoreAI-PlantDiseaseDetector
 
-`Examples/01-CoreAI-PlantDiseaseDetector` is a YOLO-based plant disease object detector example for a WWDC 2026 / Apple Core AI portfolio repository. It is not a simple classifier example. The example covers model validation, Core AI conversion, Swift-side raw output postprocessing, and a SwiftUI iOS app foundation.
+YOLO-based plant disease detector example for Apple Core AI conversion, raw detector outputs, and Swift-side postprocessing.
 
-## What This Example Does
+## Summary
 
-- Validates a local YOLO detector checkpoint against `python/configs/full_plant_data.yaml`.
-- Converts the local checkpoint into a raw-output Core AI asset.
-- Preserves a strict model contract between Python and iOS.
-- Uses Swift to interpret raw detector outputs and render final detections.
-- Provides an iOS demo app with a mock fallback path when no local model is bundled.
+This example starts from a locally available YOLO checkpoint, converts it into a raw-output Core AI model, and feeds the detector outputs into a SwiftUI iOS app that performs class selection, confidence filtering, box conversion, and class-aware NMS on-device.
+
+It is an object detection example, not a simple classifier.
+
+## Status
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| YOLO class contract validation | Verified | `best.pt` matched YAML class order and count |
+| Core AI conversion pipeline | Verified | Generates `FarmerHelper_YOLO26_RawDetector.aimodel` locally |
+| Raw-output model contract | Implemented | `raw_boxes` and `raw_scores` contract documented and copied into the app |
+| Swift postprocessing | Implemented | best class selection, confidence filtering, box conversion, class-aware NMS |
+| Local `.aimodel` sync | Implemented | helper script copies local model into app resources |
+| SwiftPM tests | Passed | 4 tests |
+| Xcode beta build | Passed | verified with inline `DEVELOPER_DIR` |
 
 ## Architecture
 
@@ -19,85 +29,55 @@ Examples/01-CoreAI-PlantDiseaseDetector/models/raw/best.pt
 -> raw_boxes [1, 4, 2100]
 -> raw_scores [1, 38, 2100]
 -> ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Services/Inference/DetectionPostProcessor.swift
--> PlantDiseaseDetection values
--> SwiftUI overlay and result UI
+-> final PlantDiseaseDetection values
+-> SwiftUI detection overlay
 ```
 
-## Why The Core AI Model Uses Raw Outputs
+## Why Raw Outputs Are Used
 
-Direct YOLO end-to-end postprocessing conversion hit an unsupported `aten.remainder.Scalar` path. The verified solution is to disable YOLO end-to-end postprocessing before export so the Core AI asset emits raw detector tensors instead of final postprocessed detections.
+Direct YOLO postprocessed conversion hit an unsupported `aten.remainder.Scalar` path. The verified solution is to disable YOLO end-to-end postprocessing during conversion and export raw detector outputs instead.
 
-That keeps the Swift app responsible for:
+That keeps Swift responsible for:
 
-- class winner selection
+- best-class selection
 - confidence thresholding
-- `xyxy` box conversion into normalized `CGRect`
-- class-aware non-maximum suppression
+- `xyxy` box conversion to normalized `CGRect`
+- class-aware NMS
 
 ## Core AI Model Contract
 
 Input:
 
-- `image`
-- shape: `[1, 3, 320, 320]`
+- `image` `[1, 3, 320, 320]`
 - layout: `NCHW`
 - dtype: `float32`
 
 Outputs:
 
-- `raw_boxes`
-  - shape: `[1, 4, 2100]`
-  - semantic: `xyxy` pixel coordinates in `320x320` model space
-- `raw_scores`
-  - shape: `[1, 38, 2100]`
-  - semantic: per-class detector scores for each anchor
+- `raw_boxes` `[1, 4, 2100]`
+- `raw_scores` `[1, 38, 2100]`
 
-Postprocessing defaults:
+Model / postprocessing defaults:
 
 - class count: `38`
 - confidence threshold: `0.35`
 - IoU threshold: `0.45`
-- NMS: class-aware, implemented in Swift
+- postprocessing location: Swift / iOS
 
-## What Is Implemented
+## Local Conversion Flow
 
-- YOLO class contract validation.
-- Core AI raw detector conversion.
-- Raw-output model contract documentation.
-- Swift postprocessing foundation.
-- Class-aware NMS in `DetectionPostProcessor.swift`.
-- SwiftUI detection overlay and app UI scaffold.
-- Local-only model sync script for the iOS app.
-- SwiftPM detector-core tests.
-- Xcode beta build verification.
-
-## What Is Not Included Yet
-
-- `best.pt` in Git.
-- `FarmerHelper_YOLO26_RawDetector.aimodel` in Git.
-- Generated conversion metadata in Git.
-- Cloud-hosted model downloads.
-- Training dataset or distributable model weights.
-- Final production Core AI runtime API wiring beyond the current compile-safe placeholder boundary.
-
-## Model Artifacts
-
-The trained YOLO `.pt` model and generated Core AI `.aimodel` are intentionally not committed to this repository because they are large generated artifacts. Generated conversion metadata is also intentionally kept local-only.
-
-If you need the trained `best.pt` model or the generated `FarmerHelper_YOLO26_RawDetector.aimodel` for testing or review, please open a GitHub issue, leave a comment on the repository, or contact the repository owner by email if a contact address is available on the repository or GitHub profile. The artifacts can be shared manually when appropriate.
-
-## Reproducing The Local Model Flow
-
-Place the local trained model here:
+Place the local trained model at:
 
 ```text
 Examples/01-CoreAI-PlantDiseaseDetector/models/raw/best.pt
 ```
 
-Run the Core AI conversion from:
+Run the conversion from `Examples/01-CoreAI-PlantDiseaseDetector/python`:
 
 ```bash
-cd Examples/01-CoreAI-PlantDiseaseDetector/python
+.venv/bin/python -m pytest tests
+.venv/bin/python -m py_compile *.py
+
 MPLCONFIGDIR=/tmp/mpl .venv-coreai/bin/python convert_to_core_ai.py \
   --model-path ../models/raw/best.pt \
   --output-dir ../models/core-ai \
@@ -113,81 +93,56 @@ Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDe
 Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/core_ai_conversion_metadata.json
 ```
 
-## Python Verification
+## iOS App Integration
 
-From `Examples/01-CoreAI-PlantDiseaseDetector/python`:
-
-```bash
-.venv/bin/python -m pytest tests
-.venv/bin/python -m py_compile *.py
-MPLCONFIGDIR=/tmp/mpl .venv-coreai/bin/python convert_to_core_ai.py \
-  --model-path ../models/raw/best.pt \
-  --output-dir ../models/core-ai \
-  --data-yaml configs/full_plant_data.yaml \
-  --imgsz 320 \
-  --overwrite
-```
-
-## iOS Local Model Sync
-
-Use the existing helper script:
+Use the sync helper to copy the local model into the iOS app:
 
 ```text
 Examples/01-CoreAI-PlantDiseaseDetector/scripts/sync-local-aimodel.sh
 ```
 
-It copies the model:
+It copies:
 
 - from:
   `Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/FarmerHelper_YOLO26_RawDetector.aimodel`
 - to:
   `Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/FarmerHelper_YOLO26_RawDetector.aimodel`
 
-The copied app-resource `.aimodel` is still ignored and local-only.
+The copied app-resource `.aimodel` remains ignored and local-only.
 
-## iOS Verification With Xcode Beta
+## Verification Summary
 
-Do not change the system default Xcode. Use inline `DEVELOPER_DIR` only.
+- Python tests: passed
+- Python compile check: passed
+- Core AI conversion: passed
+- SwiftPM tests: passed, 4 tests
+- Xcode beta build: passed
+- default Xcode: unchanged
 
-Verified local beta path on the author machine:
+## Model Artifacts
 
-```bash
-export BETA_DEVELOPER_DIR="/Users/rniranjan/Downloads/Xcode-beta.app/Contents/Developer"
-```
+The trained YOLO `.pt` model, generated Core AI `.aimodel`, and generated conversion metadata are intentionally not committed. If you need the model artifacts for testing or review, please open a GitHub issue, leave a comment on the repository, or contact the repository owner. Artifacts can be shared manually when appropriate.
 
-Other developers should replace that path with their own Xcode beta installation path.
+## What Is Implemented
 
-Verification commands:
+- YOLO contract validation
+- Core AI raw detector conversion
+- raw-output model contract
+- Swift postprocessing foundation
+- class-aware NMS
+- local-only model sync
+- Xcode beta build verification
 
-```bash
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild -version
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcrun swift --version
+## What Is Not Included Yet
 
-cd Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp
+- model artifacts in Git
+- cloud-hosted model downloads
+- production Core AI runtime API final wiring beyond the current placeholder boundary
+- training dataset or distributable model weights
 
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" swift test --scratch-path /tmp/plant-disease-detector-swiftpm-build
+## Related Docs
 
-DEVELOPER_DIR="$BETA_DEVELOPER_DIR" xcodebuild \
-  -project PlantDiseaseDetectorApp.xcodeproj \
-  -scheme PlantDiseaseDetectorApp \
-  -sdk iphonesimulator \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath /tmp/plant-disease-detector-derived-data \
-  build
-```
-
-Latest verified local result:
-
-- `Xcode 27.0`
-- `Build version 27A5194q`
-- `Swift 6.4`
-- SwiftPM tests: `4 tests, 0 failures`
-- Xcode build: `BUILD SUCCEEDED`
-- Default Xcode was not changed
-
-## Where To Read More
-
-- Python conversion details: [docs/conversion-notes.md](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/conversion-notes.md)
-- iOS integration details: [docs/ios-integration-notes.md](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/ios-integration-notes.md)
-- Raw model contract: [docs/model-contract.md](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/model-contract.md)
-- Verification history: [docs/verification-report.md](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/verification-report.md)
+- [Python conversion notes](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/conversion-notes.md)
+- [iOS integration notes](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/ios-integration-notes.md)
+- [Model contract](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/model-contract.md)
+- [Verification report](/Users/rniranjan/PersonalProject/WWDC2026CoreAI/Examples/01-CoreAI-PlantDiseaseDetector/docs/verification-report.md)
