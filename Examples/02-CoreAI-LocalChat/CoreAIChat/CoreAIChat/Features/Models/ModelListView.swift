@@ -20,10 +20,10 @@ struct ModelListView: View {
                         .buttonStyle(.borderedProminent)
                     }
                     .padding(AppSpacing.xl)
-                } else if viewModel.models.isEmpty {
+                } else if viewModel.modelReferences.isEmpty {
                     EmptyStateView(
                         title: "No models in this catalog",
-                        message: "Refresh the bundled catalog or configure a remote manifest in Settings.",
+                        message: "Refresh the bundled catalog or configure a remote manifest in Settings. External catalog entries also load from the bundled schema-v3 catalog.",
                         systemImage: "cpu"
                     ) {
                         Button {
@@ -39,9 +39,9 @@ struct ModelListView: View {
                         LazyVStack(spacing: AppSpacing.md) {
                             catalogSummary
 
-                            ForEach(viewModel.models) { model in
-                                NavigationLink(value: model) {
-                                    modelRow(model)
+                            ForEach(viewModel.modelReferences) { reference in
+                                NavigationLink(value: reference) {
+                                    modelRow(reference)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -67,8 +67,8 @@ struct ModelListView: View {
                     .accessibilityLabel("Refresh model catalog")
                 }
             }
-            .navigationDestination(for: ModelVariant.self) { model in
-                ModelDetailView(model: model, viewModel: viewModel)
+            .navigationDestination(for: CatalogModelReference.self) { reference in
+                ModelDetailView(reference: reference, viewModel: viewModel)
             }
             .task {
                 await viewModel.load()
@@ -82,7 +82,7 @@ struct ModelListView: View {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text("Model Catalog")
                         .font(.headline)
-                    Text("\(viewModel.models.count) manifest entries")
+                    Text("\(viewModel.models.count) manifest models • \(viewModel.externalModels.count) external models")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -98,7 +98,16 @@ struct ModelListView: View {
         }
     }
 
-    private func modelRow(_ model: ModelVariant) -> some View {
+    @ViewBuilder
+    private func modelRow(_ reference: CatalogModelReference) -> some View {
+        if let model = viewModel.internalModel(for: reference) {
+            internalModelRow(model, reference: reference)
+        } else if let model = viewModel.externalModel(for: reference) {
+            externalModelRow(model)
+        }
+    }
+
+    private func internalModelRow(_ model: ModelVariant, reference: CatalogModelReference) -> some View {
         CardView {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 HStack(alignment: .top, spacing: AppSpacing.md) {
@@ -113,12 +122,12 @@ struct ModelListView: View {
 
                     Spacer()
 
-                    if viewModel.isActive(model) {
+                    if viewModel.isActive(reference) {
                         StatusBadgeView(title: "Active", systemImage: "checkmark.seal.fill", tint: Color.accentColor)
                     }
                 }
 
-                HStack(spacing: AppSpacing.sm) {
+                horizontalBadges {
                     StatusBadgeView(title: model.quantization, systemImage: "slider.horizontal.3", tint: AppColors.neutral)
                     StatusBadgeView(title: "\(model.contextWindow) tokens", systemImage: "text.word.spacing", tint: AppColors.neutral)
                     ModelAvailabilityBadge(availability: viewModel.availability(for: model))
@@ -135,8 +144,131 @@ struct ModelListView: View {
                         systemImage: "doc.text",
                         tint: manifestTint
                     )
+                    StatusBadgeView(
+                        title: "Manifest",
+                        systemImage: "internaldrive",
+                        tint: AppColors.neutral
+                    )
                 }
             }
+        }
+    }
+
+    private func externalModelRow(_ model: CoreAIExternalModelProfile) -> some View {
+        let preflight = viewModel.preflight(for: model)
+
+        return CardView {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                HStack(alignment: .top, spacing: AppSpacing.md) {
+                    VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                        Text(model.name)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        Text("\(model.family) - \(model.architecture)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    StatusBadgeView(title: "External", systemImage: "globe", tint: Color.accentColor)
+                }
+
+                horizontalBadges {
+                    capabilityBadges(for: model, preflight: preflight)
+                    StatusBadgeView(title: "\(model.generation.defaultContextWindow) tokens", systemImage: "text.word.spacing", tint: AppColors.neutral)
+                }
+
+                HStack(spacing: AppSpacing.sm) {
+                    StatusBadgeView(
+                        title: readinessTitle(preflight.readiness),
+                        systemImage: readinessSystemImage(preflight.readiness),
+                        tint: readinessTint(preflight.readiness)
+                    )
+                    StatusBadgeView(
+                        title: model.license,
+                        systemImage: "doc.text",
+                        tint: AppColors.neutral
+                    )
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func capabilityBadges(
+        for model: CoreAIExternalModelProfile,
+        preflight: CoreAIRunnerPreflightResult
+    ) -> some View {
+        if model.capabilities.supportsTextChat {
+            StatusBadgeView(title: "Text Chat", systemImage: "text.bubble", tint: AppColors.success)
+        }
+        if model.capabilities.supportsImageUpload {
+            StatusBadgeView(title: "Image Upload", systemImage: "photo", tint: AppColors.success)
+        }
+        if model.capabilities.supportsImageTextToText || model.capabilities.supportsImageToText {
+            StatusBadgeView(title: "Vision Language", systemImage: "viewfinder", tint: AppColors.success)
+        }
+        if preflight.readiness == .adapterRequired || model.runtime.status == .adapterRequired {
+            StatusBadgeView(title: "Runtime Adapter Required", systemImage: "wrench.and.screwdriver", tint: AppColors.warning)
+        }
+        if model.artifacts.allSatisfy(\.isManualInstallOnly) {
+            StatusBadgeView(title: "Manual Install", systemImage: "shippingbox", tint: AppColors.warning)
+        }
+    }
+
+    private func horizontalBadges<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppSpacing.sm) {
+                content()
+            }
+        }
+    }
+
+    private func readinessTitle(_ readiness: CoreAIRunnerReadiness) -> String {
+        switch readiness {
+        case .ready:
+            "Ready"
+        case .experimental:
+            "Experimental"
+        case .adapterRequired:
+            "Adapter Required"
+        case .unsupported:
+            "Unsupported"
+        case .missingArtifacts:
+            "Missing Artifacts"
+        case .invalidProfile:
+            "Invalid Profile"
+        }
+    }
+
+    private func readinessSystemImage(_ readiness: CoreAIRunnerReadiness) -> String {
+        switch readiness {
+        case .ready:
+            "checkmark.circle.fill"
+        case .experimental:
+            "flask"
+        case .adapterRequired:
+            "wrench.and.screwdriver"
+        case .unsupported:
+            "xmark.octagon.fill"
+        case .missingArtifacts:
+            "shippingbox"
+        case .invalidProfile:
+            "exclamationmark.triangle.fill"
+        }
+    }
+
+    private func readinessTint(_ readiness: CoreAIRunnerReadiness) -> Color {
+        switch readiness {
+        case .ready:
+            AppColors.success
+        case .experimental:
+            Color.accentColor
+        case .adapterRequired, .missingArtifacts:
+            AppColors.warning
+        case .unsupported, .invalidProfile:
+            AppColors.danger
         }
     }
 
@@ -146,9 +278,7 @@ struct ModelListView: View {
             AppColors.neutral
         case .remote:
             AppColors.success
-        case .cachedRemote:
-            AppColors.warning
-        case .fallbackBundled:
+        case .cachedRemote, .fallbackBundled:
             AppColors.warning
         }
     }

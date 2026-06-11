@@ -47,6 +47,14 @@ struct ModelCatalogService: @unchecked Sendable {
         return try Self.decodeManifest(from: data, decoder: decoder)
     }
 
+    func loadExternalCatalog() throws -> CoreAIExternalModelCatalog {
+        let data = try loader.loadData(
+            named: "external_coreai_model_catalog_v3.json",
+            subdirectory: "Resources/ModelManifest"
+        )
+        return try CoreAIExternalModelCatalogLoader.decode(data: data, decoder: decoder)
+    }
+
     func loadCatalog(useRemote: Bool, remoteManifestURL: String?) async -> ModelCatalogResult {
         guard useRemote,
               let remoteManifestURL,

@@ -1,0 +1,1130 @@
+{
+  "schemaVersion": 3,
+  "catalogId": "wwdc2026-coreai-external-model-catalog",
+  "catalogName": "WWDC2026 Core AI External Model Catalog",
+  "catalogVersion": "2026-06-11-draft",
+  "description": "Curated external Core AI model profiles for the CoreAIChat example. Direct artifact URLs and SHA-256 values are intentionally null until verified. Users may manually download the referenced Hugging Face artifacts and place them in local model storage.",
+  "sourcePolicy": {
+    "artifactRedistribution": "external-links-only",
+    "checksumPolicy": "sha256-required-before-automatic-download",
+    "manualInstallPolicy": "manual install is allowed when artifact directory name matches artifact.manualInstallDirectoryName",
+    "runtimePolicy": "model may be visible/downloadable before its runtime adapter is implemented"
+  },
+  "defaultGeneration": {
+    "contextWindow": 2048,
+    "maxOutputTokens": 512,
+    "temperature": 0.7,
+    "topP": 0.9,
+    "repetitionPenalty": null
+  },
+  "models": [
+    {
+      "id": "qwen3_5_0_8b_coreai_pipelined",
+      "name": "Qwen3.5 0.8B Core AI",
+      "family": "qwen3.5",
+      "modelSeries": "Qwen3.5",
+      "displayCategory": "Text Chat",
+      "parameterScale": "0.8B",
+      "architecture": "Hybrid linear-attention/full-attention text decoder with 4 runtime states",
+      "license": "Apache-2.0",
+      "description": "Small text-to-text Core AI LanguageBundle. Good first external model target because it is small, Apache-2.0, and has a documented Core AI pipelined path.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/qwen3.5-0.8B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/qwen3.5-0.8B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/Qwen/Qwen3.5-0.8B",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/qwen3.5.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_ship",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/qwen3_5_0_8b_decode_int8hu_perchan_sym/",
+          "manualInstallDirectoryName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
+          "fileName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
+          "downloadURL": null,
+          "expectedSizeBytes": 1300000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Full bundle: .aimodel + tokenizer + metadata. Upstream keeps the historical 'perchan' directory name; notes say the head is per-block-32 absmax int8."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle-or-upstream-huggingface",
+        "type": "qwen-tokenizer",
+        "chatTemplate": "qwen-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedNStateText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "keyCache",
+          "valueCache",
+          "convState",
+          "recState"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": null,
+        "notes": [
+          "Qwen3.5 uses key/value cache plus conv/rec SSM states. Requires N-state/pipelined runner support."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supported",
+        "iPad": "supported",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": []
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 210.0,
+        "iPhone17ProGPUDecodeTokPerSec": "69.7-74.0",
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "qwen3_5_2b_coreai_pipelined",
+      "name": "Qwen3.5 2B Core AI",
+      "family": "qwen3.5",
+      "modelSeries": "Qwen3.5",
+      "displayCategory": "Text Chat",
+      "parameterScale": "2B",
+      "architecture": "Hybrid linear-attention/full-attention text decoder with 4 runtime states",
+      "license": "Apache-2.0",
+      "description": "Larger Qwen3.5 text-to-text Core AI LanguageBundle. Better quality target than 0.8B, but heavier on iPhone.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/qwen3.5-2B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/qwen3.5-2B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/Qwen/Qwen3.5-2B",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/qwen3.5.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_ship",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/qwen3_5_2b_decode_int8hu_perchan_sym/",
+          "manualInstallDirectoryName": "qwen3_5_2b_decode_int8hu_perchan_sym",
+          "fileName": "qwen3_5_2b_decode_int8hu_perchan_sym",
+          "downloadURL": null,
+          "expectedSizeBytes": 2900000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Full LanguageBundle: metadata + tokenizer + .aimodel. Upstream notes say iPhone requires increased-memory entitlement and several GB of free disk for specialization cache."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle-or-upstream-huggingface",
+        "type": "qwen-tokenizer",
+        "chatTemplate": "qwen-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedNStateText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "keyCache",
+          "valueCache",
+          "convState",
+          "recState"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": true,
+        "notes": [
+          "Same Qwen3.5 runtime shape as 0.8B; larger hidden width and artifact size."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supportedWithHighMemory",
+        "iPad": "supportedWithHighMemory",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": [
+          "Needs increased-memory entitlement on iPhone according to upstream notes."
+        ]
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 160.8,
+        "iPhone17ProGPUDecodeTokPerSec": "28-30",
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "lfm2_5_1_2b_coreai_pipelined",
+      "name": "LFM2.5 1.2B Instruct Core AI",
+      "family": "lfm2.5",
+      "modelSeries": "LFM2.5",
+      "displayCategory": "Text Chat",
+      "parameterScale": "1.2B",
+      "architecture": "Conv + full-attention hybrid text decoder with one fixed-shape conv state",
+      "license": "LFM Open License v1.0",
+      "description": "Liquid AI LFM2.5 instruct text decoder on Core AI pipelined path.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/LFM2.5-1.2B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/LFM2.5-1.2B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/lfm2.5.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_int8lin",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/lfm2_5_1_2b_instruct_decode_int8lin/",
+          "manualInstallDirectoryName": "lfm2_5_1_2b_instruct_decode_int8lin",
+          "fileName": "lfm2_5_1_2b_instruct_decode_int8lin",
+          "downloadURL": null,
+          "expectedSizeBytes": 1500000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Verified upstream path for int8lin full LanguageBundle. Upstream also reports an int8hu head-sym ship variant around 1.6 GB; verify exact repo subpath before using it."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle",
+        "type": "lfm-tokenizer",
+        "chatTemplate": "bundle-chat-template",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedExtraStateText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "convState"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": null,
+        "notes": [
+          "LFM2.5 has one fixed-shape conv buffer state."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supported",
+        "iPad": "supported",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": []
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 276.5,
+        "iPhone17ProGPUDecodeTokPerSec": "44.1-46.6",
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "granite_4_0_h_350m_coreai_pipelined",
+      "name": "Granite 4.0-H 350M Core AI",
+      "family": "granite4h",
+      "modelSeries": "Granite 4.0-H",
+      "displayCategory": "Text Chat",
+      "parameterScale": "350M",
+      "architecture": "Mamba2 + GQA attention hybrid text decoder",
+      "license": "Apache-2.0",
+      "description": "Smallest curated text-to-text Core AI model profile. Good manual-install candidate for low-memory devices.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/granite-4.0-h-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/granite-4.0-h-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/ibm-granite/granite-4.0-h-350m",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/granite-4.0-h.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_fp16",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/granite_4_0_h_350m_decode_fp16/",
+          "manualInstallDirectoryName": "granite_4_0_h_350m_decode_fp16",
+          "fileName": "granite_4_0_h_350m_decode_fp16",
+          "downloadURL": null,
+          "expectedSizeBytes": 660000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Upstream notes say 350M ships fp16 because int8 did not help speed/quality for this size."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle",
+        "type": "granite-tokenizer",
+        "chatTemplate": "granite-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedExtraStateText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "keyCache",
+          "valueCache",
+          "convState",
+          "recState"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": null,
+        "notes": [
+          "Granite has attention KV plus fixed-shape conv/SSM states."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supported",
+        "iPad": "supported",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": []
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 191.1,
+        "iPhone17ProGPUDecodeTokPerSec": null,
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "granite_4_0_h_1b_coreai_pipelined",
+      "name": "Granite 4.0-H 1B Core AI",
+      "family": "granite4h",
+      "modelSeries": "Granite 4.0-H",
+      "displayCategory": "Text Chat",
+      "parameterScale": "1B",
+      "architecture": "Mamba2 + GQA attention hybrid text decoder",
+      "license": "Apache-2.0",
+      "description": "IBM Granite 4.0-H 1B Core AI text decoder on the pipelined path.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/granite-4.0-h-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/granite-4.0-h-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/ibm-granite/granite-4.0-h-1b",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/granite-4.0-h.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_int8lin",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/granite_4_0_h_1b_decode_int8lin/",
+          "manualInstallDirectoryName": "granite_4_0_h_1b_decode_int8lin",
+          "fileName": "granite_4_0_h_1b_decode_int8lin",
+          "downloadURL": null,
+          "expectedSizeBytes": 1600000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Upstream also reports an int8hu head-sym device ship variant around 1.8 GB; verify exact repo subpath before using it."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle",
+        "type": "granite-tokenizer",
+        "chatTemplate": "granite-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedExtraStateText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "keyCache",
+          "valueCache",
+          "convState",
+          "recState"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": null,
+        "notes": [
+          "Granite has attention KV plus fixed-shape conv/SSM states."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supported",
+        "iPad": "supported",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": []
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 136.5,
+        "iPhone17ProGPUDecodeTokPerSec": "35.4-37.1",
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "gemma_4_e2b_coreai_text",
+      "name": "Gemma 4 E2B Core AI Text Decoder",
+      "family": "gemma4",
+      "modelSeries": "Gemma 4",
+      "displayCategory": "Text Chat",
+      "parameterScale": "E2B",
+      "architecture": "Gemma 4 text decoder with front-end gather, core/head path, per-layer embeddings, and dual KV states",
+      "license": "Gemma",
+      "description": "Gemma 4 E2B Core AI text-decoder profile. Heavier and more complex than Qwen/LFM/Granite because it is multi-stage.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/gemma-4-E2B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/gemma-4-E2B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/google/gemma-4-E2B-it",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/gemma4-e2b.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "frontend_gather",
+          "role": "frontendGather",
+          "format": "aimodelOrRawTableBundle",
+          "repositorySubpath": "ios-frontend/",
+          "manualInstallDirectoryName": "ios-frontend",
+          "fileName": "ios-frontend",
+          "downloadURL": null,
+          "expectedSizeBytes": 2600000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Exact artifact depends on selected Gemma runtime mode. Verify concrete directory before automatic download."
+          ]
+        },
+        {
+          "id": "decoder_or_core",
+          "role": "languageDecoder",
+          "format": "aimodelBundle",
+          "repositorySubpath": "gpu-pipelined/",
+          "manualInstallDirectoryName": "gpu-pipelined",
+          "fileName": "gpu-pipelined",
+          "downloadURL": null,
+          "expectedSizeBytes": null,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Use a verified gpu-pipelined provider/tbl config from upstream. Exact subpath must be selected manually."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-bundle-or-upstream-huggingface",
+        "type": "gemma-tokenizer",
+        "chatTemplate": "gemma-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "gemma4MultiStagePipelinedText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "slidingKeyCache",
+          "slidingValueCache",
+          "fullKeyCache",
+          "fullValueCache"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": true,
+        "notes": [
+          "Gemma 4 needs front-end gather/per-layer embedding handling plus dual KV state management."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supportedWithHighMemory",
+        "iPad": "supportedWithHighMemory",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": [
+          "Gemma 4 E2B is a heavier multi-artifact model."
+        ]
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": "77.0-78.9",
+        "iPhone17ProGPUDecodeTokPerSec": "30.3-30.7",
+        "iPhone17ProANEDecodeTokPerSec": 6,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "gemma_4_e4b_coreai_text",
+      "name": "Gemma 4 E4B Core AI Text Decoder",
+      "family": "gemma4",
+      "modelSeries": "Gemma 4",
+      "displayCategory": "Text Chat",
+      "parameterScale": "E4B",
+      "architecture": "Dense Gemma 4 text decoder with QAT int4 pipelined profile",
+      "license": "Gemma",
+      "description": "Gemma 4 E4B Core AI text-decoder profile. Large/high-memory model, best suited to Mac or high-memory iPad/iPhone testing.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/gemma-4-E4B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/gemma-4-E4B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-unquantized",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/gemma4-e4b.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "text"
+        ],
+        "inputModes": [
+          "text"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": false,
+        "supportsTextToText": true,
+        "supportsImageToText": false,
+        "supportsImageTextToText": false,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "language_bundle_or_provider",
+          "role": "languageBundle",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/",
+          "manualInstallDirectoryName": "gpu-pipelined",
+          "fileName": "gpu-pipelined",
+          "downloadURL": null,
+          "expectedSizeBytes": null,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Upstream contains gpu-pipelined provider, AOT h18p, tbl variants. Select exact directory manually."
+          ]
+        },
+        {
+          "id": "qat_gather_tables",
+          "role": "frontendGather",
+          "format": "rawTableBundle",
+          "repositorySubpath": "ios-frontend/gemma4_e4b_qat_gather_raw/",
+          "manualInstallDirectoryName": "gemma4_e4b_qat_gather_raw",
+          "fileName": "gemma4_e4b_qat_gather_raw",
+          "downloadURL": null,
+          "expectedSizeBytes": null,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Gather tables required by selected runtime configuration."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-bundle-or-upstream-huggingface",
+        "type": "gemma-tokenizer",
+        "chatTemplate": "gemma-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": []
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "runtime": {
+        "adapter": "gemma4MultiStagePipelinedText",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "slidingKeyCache",
+          "slidingValueCache",
+          "fullKeyCache",
+          "fullValueCache"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": true,
+        "notes": [
+          "Larger dense Gemma 4 profile. Requires Gemma-specific adapter."
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "macRecommended",
+        "iPad": "supportedWithHighMemory",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": [
+          "Large model; Mac recommended."
+        ]
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 55.8,
+        "iPhone17ProGPUDecodeTokPerSec": 15.1,
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": null,
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    },
+    {
+      "id": "qwen3_vl_2b_coreai_vision_language",
+      "name": "Qwen3-VL 2B Core AI",
+      "family": "qwen3-vl",
+      "modelSeries": "Qwen3-VL",
+      "displayCategory": "Vision Language",
+      "parameterScale": "2B",
+      "architecture": "Qwen3 vision-language model: fixed-grid vision encoder + text decoder LanguageBundle",
+      "license": "Apache-2.0",
+      "description": "Image + text to text Core AI model profile. Requires decoder and vision encoder artifacts plus a vision-language runtime adapter.",
+      "source": {
+        "provider": "coreai-model-zoo / Hugging Face",
+        "repositoryURL": "https://huggingface.co/mlboydaisuke/Qwen3-VL-2B-CoreAI",
+        "modelCardURL": "https://huggingface.co/mlboydaisuke/Qwen3-VL-2B-CoreAI",
+        "upstreamModelURL": "https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct",
+        "zooCardURL": "https://github.com/john-rocky/coreai-model-zoo/blob/main/zoo/qwen3-vl.md",
+        "licenseURL": null
+      },
+      "capabilities": {
+        "modalities": [
+          "image",
+          "text"
+        ],
+        "inputModes": [
+          "imageText"
+        ],
+        "outputModes": [
+          "text"
+        ],
+        "supportsTextChat": true,
+        "supportsImageUpload": true,
+        "supportsTextToText": false,
+        "supportsImageToText": true,
+        "supportsImageTextToText": true,
+        "supportsTextToImage": false,
+        "supportsImageToImage": false,
+        "supportsEmbedding": false,
+        "supportsReranking": false,
+        "supportsObjectDetection": false,
+        "supportsStreaming": true,
+        "supportsRAG": false,
+        "supportsToolCalling": null
+      },
+      "artifacts": [
+        {
+          "id": "decoder_ship",
+          "role": "languageDecoder",
+          "format": "aimodelLanguageBundle",
+          "repositorySubpath": "gpu-pipelined/qwen3_vl_2b_instruct_decode_int8hu_s1/",
+          "manualInstallDirectoryName": "qwen3_vl_2b_instruct_decode_int8hu_s1",
+          "fileName": "qwen3_vl_2b_instruct_decode_int8hu_s1",
+          "downloadURL": null,
+          "expectedSizeBytes": 2300000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Text decoder LanguageBundle with tokenizer and metadata."
+          ]
+        },
+        {
+          "id": "vision_encoder",
+          "role": "visionEncoder",
+          "format": "aimodel",
+          "repositorySubpath": "gpu-pipelined/qwen3_vl_2b_instruct_vision/",
+          "manualInstallDirectoryName": "qwen3_vl_2b_instruct_vision",
+          "fileName": "qwen3_vl_2b_instruct_vision",
+          "downloadURL": null,
+          "expectedSizeBytes": 770000000,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Fixed-grid vision encoder: 448x448 image to 196 merged tokens plus DeepStack embeddings."
+          ]
+        }
+      ],
+      "tokenizer": {
+        "source": "included-in-language-bundle",
+        "type": "qwen-vl-tokenizer",
+        "chatTemplate": "qwen-vl-chat",
+        "tokenizerFiles": [],
+        "stopTokenIds": [],
+        "stopStrings": [],
+        "notes": [
+          "Prompt image placeholders must align with runtime adapter image-token rewriting."
+        ]
+      },
+      "generation": {
+        "defaultContextWindow": 2048,
+        "maxContextWindow": null,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": null,
+        "doSample": true,
+        "greedySupported": true
+      },
+      "vision": {
+        "imageInputSupported": true,
+        "imageSize": 448,
+        "imageTokenCount": 196,
+        "imagePlaceholderToken": "<|image_pad|>",
+        "preprocessing": "qwen3-vl-fixed-grid-448",
+        "visionEncoderRunsPerImage": 1,
+        "notes": [
+          "Vision encoder produces image_embeds and deepstack_embeds consumed by decoder static inputs."
+        ]
+      },
+      "runtime": {
+        "adapter": "coreaiPipelinedVisionLanguage",
+        "status": "adapterRequired",
+        "engine": "coreai-pipelined",
+        "functionName": "main",
+        "inputNames": [
+          "input_ids",
+          "position_ids"
+        ],
+        "outputNames": [
+          "logits"
+        ],
+        "stateNames": [
+          "keyCache",
+          "valueCache"
+        ],
+        "preferredCompute": "gpu",
+        "requiresCustomMetalKernels": false,
+        "requiresCoreAIModelsPatches": true,
+        "requiredRuntimeFlags": [
+          {
+            "name": "COREAI_CHUNK_THRESHOLD",
+            "value": "1",
+            "reason": "Pipelined S=1 prefill/decode path"
+          }
+        ],
+        "requiresIncreasedMemoryEntitlement": true,
+        "notes": [
+          "Requires static input buffers for image/deepstack embeddings and image placeholder id rewriting."
+        ],
+        "staticInputNames": [
+          "image_embeds",
+          "deepstack_embeds",
+          "image_start",
+          "image_shift"
+        ]
+      },
+      "devicePolicy": {
+        "iPhone": "supportedWithHighMemory",
+        "iPad": "supportedWithHighMemory",
+        "Mac": "recommended",
+        "minimumOS": {
+          "iOS": "27.0",
+          "iPadOS": "27.0",
+          "macOS": "27.0"
+        },
+        "notes": [
+          "Vision-language runtime and image picker UI required."
+        ]
+      },
+      "performance": {
+        "macOSM4MaxGPUDecodeTokPerSec": 187.6,
+        "iPhone17ProGPUDecodeTokPerSec": 33.3,
+        "iPhone17ProANEDecodeTokPerSec": null,
+        "visionEncodeLatencyMs": "60-80",
+        "benchmarkNotes": "Upstream reference values only; not measured by WWDC2026CoreAI."
+      }
+    }
+  ]
+}

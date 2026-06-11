@@ -112,4 +112,66 @@ struct LocalModelStore {
             .appendingPathComponent("DownloadedModels", isDirectory: true)
             .appendingPathComponent(fileName)
     }
+
+    func resolvedArtifacts(for profile: CoreAIExternalModelProfile) -> [CoreAIResolvedArtifact] {
+        profile.artifacts.map { artifact in
+            let candidates = externalArtifactCandidates(for: artifact)
+            let resolvedURL = candidates.first(where: { fileManager.fileExists(atPath: $0.path) }) ?? candidates.first
+            let exists = resolvedURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+            let isDirectory = resolvedURL.flatMap {
+                try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
+            } ?? false
+
+            return CoreAIResolvedArtifact(
+                id: artifact.id,
+                artifactRole: artifact.role,
+                expectedDirectoryName: artifact.manualInstallDirectoryName,
+                localURL: resolvedURL,
+                exists: exists,
+                isDirectory: isDirectory,
+                notes: artifact.notes
+            )
+        }
+    }
+
+    private func externalArtifactCandidates(for artifact: CoreAIModelArtifact) -> [URL] {
+        var candidates: [URL] = []
+
+        if let bundledURL = bundledExternalArtifactURL(name: artifact.manualInstallDirectoryName) {
+            candidates.append(bundledURL)
+        }
+        if let bundledURL = bundledExternalArtifactURL(name: artifact.fileName) {
+            candidates.append(bundledURL)
+        }
+        if let applicationSupportDirectory {
+            candidates.append(
+                applicationSupportDirectory
+                    .appendingPathComponent("AIModels", isDirectory: true)
+                    .appendingPathComponent(artifact.manualInstallDirectoryName)
+            )
+            candidates.append(
+                applicationSupportDirectory
+                    .appendingPathComponent("AIModels", isDirectory: true)
+                    .appendingPathComponent(artifact.fileName)
+            )
+            candidates.append(
+                applicationSupportDirectory
+                    .appendingPathComponent("DownloadedModels", isDirectory: true)
+                    .appendingPathComponent(artifact.fileName)
+            )
+        }
+
+        return Array(NSOrderedSet(array: candidates)) as? [URL] ?? candidates
+    }
+
+    private func bundledExternalArtifactURL(name: String) -> URL? {
+        let resourceName = (name as NSString).deletingPathExtension
+        let resourceExtension = (name as NSString).pathExtension
+
+        return bundle.url(
+            forResource: resourceName,
+            withExtension: resourceExtension.isEmpty ? nil : resourceExtension,
+            subdirectory: "Resources/AIModels"
+        )
+    }
 }

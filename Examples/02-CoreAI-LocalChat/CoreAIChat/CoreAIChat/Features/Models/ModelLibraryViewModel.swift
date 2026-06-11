@@ -1,35 +1,59 @@
 import Foundation
 
+enum CatalogModelKind: String, Hashable {
+    case internalModel
+    case externalModel
+}
+
+struct CatalogModelReference: Hashable, Identifiable {
+    let kind: CatalogModelKind
+    let modelID: String
+
+    var id: String {
+        "\(kind.rawValue):\(modelID)"
+    }
+}
+
 @MainActor
 final class ModelLibraryViewModel: ObservableObject {
     @Published private(set) var models: [ModelVariant] = []
+    @Published private(set) var externalModels: [CoreAIExternalModelProfile] = []
     @Published private(set) var availability: [String: ModelAvailability] = [:]
     @Published private(set) var downloadStates: [String: ModelDownloadState] = [:]
     @Published private(set) var manifestSource: ManifestSource = .bundled
     @Published private(set) var activeModelID: String?
     @Published private(set) var settings: AppSettings
     @Published var loadError: String?
+    @Published private(set) var externalCatalogLoadError: String?
 
     private let catalogService: ModelCatalogService
     private let localModelStore: LocalModelStore
     private let activeModelStore: ActiveModelStore
     private let appSettingsStore: AppSettingsStore
     private let downloadManager: ModelDownloadManager
+    private let externalRunnerRegistry: CoreAIModelRunnerRegistry
 
     init(
         catalogService: ModelCatalogService = ModelCatalogService(),
         localModelStore: LocalModelStore = LocalModelStore(),
         activeModelStore: ActiveModelStore = ActiveModelStore(),
         appSettingsStore: AppSettingsStore = AppSettingsStore(),
-        downloadManager: ModelDownloadManager = ModelDownloadManager()
+        downloadManager: ModelDownloadManager = ModelDownloadManager(),
+        externalRunnerRegistry: CoreAIModelRunnerRegistry = .knownExternalModelRegistry()
     ) {
         self.catalogService = catalogService
         self.localModelStore = localModelStore
         self.activeModelStore = activeModelStore
         self.appSettingsStore = appSettingsStore
         self.downloadManager = downloadManager
+        self.externalRunnerRegistry = externalRunnerRegistry
         self.activeModelID = activeModelStore.activeModelID
         self.settings = appSettingsStore.load()
+    }
+
+    var modelReferences: [CatalogModelReference] {
+        models.map { CatalogModelReference(kind: .internalModel, modelID: $0.id) }
+            + externalModels.map { CatalogModelReference(kind: .externalModel, modelID: $0.id) }
     }
 
     func load() async {
@@ -40,6 +64,13 @@ final class ModelLibraryViewModel: ObservableObject {
         )
 
         models = result.manifest.models
+        do {
+            externalModels = try catalogService.loadExternalCatalog().models
+            externalCatalogLoadError = nil
+        } catch {
+            externalModels = []
+            externalCatalogLoadError = error.localizedDescription
+        }
         manifestSource = result.source
         activeModelID = activeModelStore.activeModelID
         refreshAvailabilityAndDownloadStates()
@@ -61,6 +92,20 @@ final class ModelLibraryViewModel: ObservableObject {
 
     func isActive(_ model: ModelVariant) -> Bool {
         activeModelID == model.id
+    }
+
+    func isActive(_ reference: CatalogModelReference) -> Bool {
+        reference.kind == .internalModel && activeModelID == reference.modelID
+    }
+
+    func internalModel(for reference: CatalogModelReference) -> ModelVariant? {
+        guard reference.kind == .internalModel else { return nil }
+        return models.first(where: { $0.id == reference.modelID })
+    }
+
+    func externalModel(for reference: CatalogModelReference) -> CoreAIExternalModelProfile? {
+        guard reference.kind == .externalModel else { return nil }
+        return externalModels.first(where: { $0.id == reference.modelID })
     }
 
     func setActive(_ model: ModelVariant) {
@@ -139,6 +184,24 @@ final class ModelLibraryViewModel: ObservableObject {
             return "\(model.name) (\(availability.displayText))"
         }
         return "\(model.name) unavailable — using mock runtime."
+    }
+
+    func resolvedArtifacts(for profile: CoreAIExternalModelProfile) -> [CoreAIResolvedArtifact] {
+        localModelStore.resolvedArtifacts(for: profile)
+    }
+
+    func preflight(for profile: CoreAIExternalModelProfile) -> CoreAIRunnerPreflightResult {
+        externalRunnerRegistry.preflight(
+            profile: profile,
+            localArtifacts: resolvedArtifacts(for: profile)
+        )
+    }
+
+    func missingRequiredArtifacts(for profile: CoreAIExternalModelProfile) -> [CoreAIModelArtifact] {
+        CoreAIRunnerPreflightSupport.missingRequiredArtifacts(
+            profile: profile,
+            localArtifacts: resolvedArtifacts(for: profile)
+        )
     }
 
     private func refreshAvailabilityAndDownloadStates() {

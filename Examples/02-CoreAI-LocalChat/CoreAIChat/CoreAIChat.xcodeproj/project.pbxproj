@@ -14,8 +14,11 @@
 		B20000000000000000000202 /* ModelCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/ModelCatalog/ModelCatalogService.swift; sourceTree = "<group>"; };
 		B20000000000000000000203 /* ModelManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/ModelCatalog/ModelManifest.swift; sourceTree = "<group>"; };
 		B20000000000000000000204 /* ModelVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/ModelCatalog/ModelVariant.swift; sourceTree = "<group>"; };
+		B20000000000000000000221 /* CoreAIExternalModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/ModelCatalog/CoreAIExternalModelCatalog.swift; sourceTree = "<group>"; };
 		B20000000000000000000205 /* ChatModelRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/ChatModelRuntime.swift; sourceTree = "<group>"; };
 		B20000000000000000000206 /* CoreAIChatRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/CoreAIChatRuntime.swift; sourceTree = "<group>"; };
+		B20000000000000000000222 /* CoreAIRunnerArchitecture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/CoreAIRunnerArchitecture.swift; sourceTree = "<group>"; };
+		B20000000000000000000223 /* CoreAIConcreteRunnerSkeletons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/CoreAIConcreteRunnerSkeletons.swift; sourceTree = "<group>"; };
 		B20000000000000000000207 /* MockChatRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/MockChatRuntime.swift; sourceTree = "<group>"; };
 		B20000000000000000000208 /* RuntimeStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/RuntimeStatus.swift; sourceTree = "<group>"; };
 		B20000000000000000000209 /* ChatGenerationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Settings/ChatGenerationSettings.swift; sourceTree = "<group>"; };
@@ -64,8 +67,11 @@
 				B20000000000000000000202 /* ModelCatalogService.swift */,
 				B20000000000000000000203 /* ModelManifest.swift */,
 				B20000000000000000000204 /* ModelVariant.swift */,
+				B20000000000000000000221 /* CoreAIExternalModelCatalog.swift */,
 				B20000000000000000000205 /* ChatModelRuntime.swift */,
 				B20000000000000000000206 /* CoreAIChatRuntime.swift */,
+				B20000000000000000000222 /* CoreAIRunnerArchitecture.swift */,
+				B20000000000000000000223 /* CoreAIConcreteRunnerSkeletons.swift */,
 				B20000000000000000000207 /* MockChatRuntime.swift */,
 				B20000000000000000000208 /* RuntimeStatus.swift */,
 				B20000000000000000000209 /* ChatGenerationSettings.swift */,
@@ -188,8 +194,11 @@
 		B20000000000000000000102 /* ModelCatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000202 /* ModelCatalogService.swift */; };
 		B20000000000000000000103 /* ModelManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000203 /* ModelManifest.swift */; };
 		B20000000000000000000104 /* ModelVariant.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000204 /* ModelVariant.swift */; };
+		B20000000000000000000123 /* CoreAIExternalModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000221 /* CoreAIExternalModelCatalog.swift */; };
 		B20000000000000000000105 /* ChatModelRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000205 /* ChatModelRuntime.swift */; };
 		B20000000000000000000106 /* CoreAIChatRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000206 /* CoreAIChatRuntime.swift */; };
+		B20000000000000000000124 /* CoreAIRunnerArchitecture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000222 /* CoreAIRunnerArchitecture.swift */; };
+		B20000000000000000000125 /* CoreAIConcreteRunnerSkeletons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000223 /* CoreAIConcreteRunnerSkeletons.swift */; };
 		B20000000000000000000107 /* MockChatRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000207 /* MockChatRuntime.swift */; };
 		B20000000000000000000108 /* RuntimeStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000208 /* RuntimeStatus.swift */; };
 		B20000000000000000000109 /* ChatGenerationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000209 /* ChatGenerationSettings.swift */; };
@@ -239,8 +248,11 @@
 				B20000000000000000000102 /* ModelCatalogService.swift in Sources */,
 				B20000000000000000000103 /* ModelManifest.swift in Sources */,
 				B20000000000000000000104 /* ModelVariant.swift in Sources */,
+				B20000000000000000000123 /* CoreAIExternalModelCatalog.swift in Sources */,
 				B20000000000000000000105 /* ChatModelRuntime.swift in Sources */,
 				B20000000000000000000106 /* CoreAIChatRuntime.swift in Sources */,
+				B20000000000000000000124 /* CoreAIRunnerArchitecture.swift in Sources */,
+				B20000000000000000000125 /* CoreAIConcreteRunnerSkeletons.swift in Sources */,
 				B20000000000000000000107 /* MockChatRuntime.swift in Sources */,
 				B20000000000000000000108 /* RuntimeStatus.swift in Sources */,
 				B20000000000000000000109 /* ChatGenerationSettings.swift in Sources */,
