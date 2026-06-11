@@ -32,6 +32,8 @@ CoreAIChat is a SwiftUI local-chat app foundation for Apple Core AI workflows. I
 
 `CoreAIChatRuntime` validates local model availability and reports that runtime integration is pending. It does not call invented Core AI APIs. When a selected model is missing, unavailable, or only present as a downloaded archive, the app falls back to the mock runtime.
 
+Runtime integration research for Qwen-based Core AI bundles currently references [`john-rocky/coreai-model-zoo`](https://github.com/john-rocky/coreai-model-zoo) as an external Swift runtime candidate. See [docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md](docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md).
+
 ## Manual `.aimodel` Setup
 
 Copy local test models into:

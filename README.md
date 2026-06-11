@@ -42,6 +42,7 @@ docs/
 - Build the local chat app: [Examples/02-CoreAI-LocalChat/README.md](Examples/02-CoreAI-LocalChat/README.md)
 - Review the local chat architecture: [Examples/02-CoreAI-LocalChat/docs/ARCHITECTURE.md](Examples/02-CoreAI-LocalChat/docs/ARCHITECTURE.md)
 - Review the model manifest contract: [Examples/02-CoreAI-LocalChat/docs/MODEL_MANIFEST.md](Examples/02-CoreAI-LocalChat/docs/MODEL_MANIFEST.md)
+- Review the external runtime evaluation note: [Examples/02-CoreAI-LocalChat/docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md](Examples/02-CoreAI-LocalChat/docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md)
 - Review the plant detector flow: [Examples/01-CoreAI-PlantDiseaseDetector/README.md](Examples/01-CoreAI-PlantDiseaseDetector/README.md)
 - Browse the documentation index: [docs/INDEX.md](docs/INDEX.md)
 
@@ -66,6 +67,8 @@ This repo explores Apple-native Core AI workflows. It does not use `llama.cpp` o
 Core AI model work is not only a file-format change. Model graph support, tokenizer behavior, postprocessing, runtime inputs and outputs, and platform availability all matter. Example 01 keeps YOLO postprocessing in Swift because the practical runtime boundary is the raw detector output. Example 02 keeps `CoreAIChatRuntime` as a compile-safe boundary and uses `MockChatRuntime` until a compatible Core AI LLM artifact and runtime API path are available.
 
 Not every PyTorch model converts automatically. Unsupported operators, dynamic graph behavior, tokenizer/runtime coupling, and licensing restrictions must be handled explicitly.
+
+Reference runtime research for Example 02 includes [`john-rocky/coreai-model-zoo`](https://github.com/john-rocky/coreai-model-zoo), specifically its Swift `ZooFMProvider` and `CoreAIRunner` packages and `knowledge/swift-runtime.md`. See [Examples/02-CoreAI-LocalChat/docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md](Examples/02-CoreAI-LocalChat/docs/EXTERNAL_RUNTIME_INTEGRATION_PLAN.md).
 
 ## Requirements
 
