@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "models": [
+    {
+      "id": "local-demo-core-ai",
+      "name": "Local Demo Core AI Model",
+      "family": "Core AI Local",
+      "format": "aimodel",
+      "quantization": "Q4",
+      "fileName": "local-demo-core-ai.aimodel",
+      "contextWindow": 4096,
+      "estimatedSize": "1.2 GB",
+      "description": "A local manifest entry for manually testing a Core AI chat model copied into Resources/AIModels."
+    },
+    {
+      "id": "gemma-small-q4-placeholder",
+      "name": "Gemma Small Q4 Placeholder",
+      "family": "Gemma",
+      "format": "aimodel",
+      "quantization": "Q4",
+      "fileName": "gemma-small-q4.aimodel",
+      "contextWindow": 8192,
+      "estimatedSize": "2.0 GB",
+      "description": "Placeholder manifest record for a future Gemma-family local chat model."
+    },
+    {
+      "id": "phi-small-q4-placeholder",
+      "name": "Phi Small Q4 Placeholder",
+      "family": "Phi",
+      "format": "aimodel",
+      "quantization": "Q4",
+      "fileName": "phi-small-q4.aimodel",
+      "contextWindow": 4096,
+      "estimatedSize": "1.8 GB",
+      "description": "Placeholder manifest record for a future Phi-family local chat model."
+    },
+    {
+      "id": "qwen-small-q4-placeholder",
+      "name": "Qwen Small Q4 Placeholder",
+      "family": "Qwen",
+      "format": "aimodel",
+      "quantization": "Q4",
+      "fileName": "qwen-small-q4.aimodel",
+      "contextWindow": 8192,
+      "estimatedSize": "2.4 GB",
+      "description": "Placeholder manifest record for a future Qwen-family local chat model."
+    }
+  ]
+}

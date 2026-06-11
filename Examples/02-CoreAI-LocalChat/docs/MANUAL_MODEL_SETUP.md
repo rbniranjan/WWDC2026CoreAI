@@ -1,0 +1,21 @@
+# Manual Model Setup
+
+Phase 1 supports manual local model detection.
+
+1. Build or obtain a local `.aimodel` chat model outside this repository.
+2. Copy it into:
+
+```text
+Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/
+```
+
+3. Make sure the file name exactly matches a `fileName` entry in:
+
+```text
+Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/ModelManifest/model_manifest.json
+```
+
+4. Open the app, go to Models, and refresh or relaunch.
+5. Select a local model and use Set as Active Model.
+
+`.aimodel` files are ignored by git. Do not commit model weights, generated model artifacts, build products, DerivedData, or downloaded models.

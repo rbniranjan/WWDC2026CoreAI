@@ -28,11 +28,15 @@ Examples/01-CoreAI-PlantDiseaseDetector/models/core-ai/*
 Examples/01-CoreAI-PlantDiseaseDetector/models/ios-package/*
 Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/*.aimodel
 Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/*.aimodel/
+Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/*.aimodel
+Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/*.aimodel/
 !Examples/01-CoreAI-PlantDiseaseDetector/models/**/.gitkeep
 !Examples/01-CoreAI-PlantDiseaseDetector/models/**/README.md
 
 # Apple/Xcode
 DerivedData/
+.build/
+.swiftpm/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
