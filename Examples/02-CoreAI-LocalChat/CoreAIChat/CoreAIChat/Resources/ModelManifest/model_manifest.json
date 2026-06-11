@@ -10,6 +10,12 @@
       "fileName": "local-demo-core-ai.aimodel",
       "contextWindow": 4096,
       "estimatedSize": "1.2 GB",
+      "expectedSizeBytes": 1288490189,
+      "isBundled": false,
+      "downloadSupported": false,
+      "artifactType": "aimodel",
+      "minimumOS": "iOS 18, iPadOS 18, macOS 15",
+      "supportedDevices": ["iPhone", "iPad", "Mac"],
       "description": "A local manifest entry for manually testing a Core AI chat model copied into Resources/AIModels."
     },
     {
@@ -21,6 +27,14 @@
       "fileName": "gemma-small-q4.aimodel",
       "contextWindow": 8192,
       "estimatedSize": "2.0 GB",
+      "expectedSizeBytes": 2147483648,
+      "isBundled": false,
+      "downloadSupported": true,
+      "downloadURL": "https://example.com/coreai-chat/gemma-small-q4.zip",
+      "artifactFileName": "gemma-small-q4.zip",
+      "artifactType": "zip",
+      "minimumOS": "iOS 18, iPadOS 18, macOS 15",
+      "supportedDevices": ["iPhone", "iPad", "Mac"],
       "description": "Placeholder manifest record for a future Gemma-family local chat model."
     },
     {
@@ -32,6 +46,12 @@
       "fileName": "phi-small-q4.aimodel",
       "contextWindow": 4096,
       "estimatedSize": "1.8 GB",
+      "expectedSizeBytes": 1932735283,
+      "isBundled": false,
+      "downloadSupported": false,
+      "artifactType": "aimodel",
+      "minimumOS": "iOS 18, iPadOS 18, macOS 15",
+      "supportedDevices": ["iPhone", "iPad", "Mac"],
       "description": "Placeholder manifest record for a future Phi-family local chat model."
     },
     {
@@ -43,6 +63,12 @@
       "fileName": "qwen-small-q4.aimodel",
       "contextWindow": 8192,
       "estimatedSize": "2.4 GB",
+      "expectedSizeBytes": 2576980377,
+      "isBundled": false,
+      "downloadSupported": false,
+      "artifactType": "aimodel",
+      "minimumOS": "iOS 18, iPadOS 18, macOS 15",
+      "supportedDevices": ["iPhone", "iPad", "Mac"],
       "description": "Placeholder manifest record for a future Qwen-family local chat model."
     }
   ]

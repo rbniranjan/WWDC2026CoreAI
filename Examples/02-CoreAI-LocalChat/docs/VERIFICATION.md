@@ -11,7 +11,18 @@ From `Examples/02-CoreAI-LocalChat`:
 The script checks:
 
 - Xcode path and version.
-- Swift package tests.
+- Swift package tests using `/tmp/coreai-chat-swiftpm-build`.
 - Xcode project build for the app target.
+- DerivedData outside the repository.
 
 Do not run `xcode-select -s`.
+
+Additional manual checks for Phase 2:
+
+```bash
+plutil -lint CoreAIChat/CoreAIChat/Info.plist
+python3 -m json.tool CoreAIChat/CoreAIChat/Resources/ModelManifest/model_manifest.json >/tmp/coreai-chat-manifest.json
+git check-ignore -v CoreAIChat/CoreAIChat/Resources/AIModels/LocalDemoModel.aimodel
+```
+
+The final check should confirm `.aimodel` files are ignored while `Resources/AIModels/README.md` remains trackable.

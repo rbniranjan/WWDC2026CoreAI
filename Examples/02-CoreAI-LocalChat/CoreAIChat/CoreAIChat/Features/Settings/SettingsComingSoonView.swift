@@ -1,22 +1,80 @@
 import SwiftUI
 
-struct SettingsComingSoonView: View {
+struct SettingsView: View {
+    @ObservedObject var viewModel: ModelLibraryViewModel
+    @State private var draftSettings: AppSettings
+
+    init(viewModel: ModelLibraryViewModel) {
+        self.viewModel = viewModel
+        _draftSettings = State(initialValue: viewModel.settings)
+    }
+
     var body: some View {
-        VStack(spacing: AppSpacing.lg) {
-            Image(systemName: "gearshape")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+        Form {
+            Section("Active Model") {
+                Text(viewModel.activeModelSummary)
+                Text("Manifest: \(viewModel.manifestSource.rawValue)")
+                    .foregroundStyle(.secondary)
+            }
 
-            Text("Settings")
-                .font(.largeTitle.bold())
+            Section("Generation") {
+                Stepper("Context window: \(draftSettings.generationSettings.contextWindow)", value: $draftSettings.generationSettings.contextWindow, in: 256...131_072, step: 256)
+                Stepper("Max output tokens: \(draftSettings.generationSettings.maxOutputTokens)", value: $draftSettings.generationSettings.maxOutputTokens, in: 1...16_384, step: 64)
+                VStack(alignment: .leading) {
+                    Text("Temperature: \(draftSettings.generationSettings.temperature, specifier: "%.2f")")
+                    Slider(value: $draftSettings.generationSettings.temperature, in: 0...2)
+                }
+                VStack(alignment: .leading) {
+                    Text("Top-p: \(draftSettings.generationSettings.topP, specifier: "%.2f")")
+                    Slider(value: $draftSettings.generationSettings.topP, in: 0.01...1)
+                }
+            }
 
-            Text("Generation controls and app preferences will be added in a later phase.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
+            Section("Model Catalog") {
+                Toggle("Use remote manifest", isOn: $draftSettings.useRemoteManifest)
+                TextField("Remote manifest URL", text: $draftSettings.remoteManifestURL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                if let date = draftSettings.lastManifestRefreshDate {
+                    Text("Last refresh: \(date.formatted())")
+                        .foregroundStyle(.secondary)
+                }
+                Button {
+                    persist()
+                    Task { await viewModel.load() }
+                } label: {
+                    Label("Refresh Model Catalog", systemImage: "arrow.clockwise")
+                }
+            }
+
+            Section("Storage") {
+                Text("Downloaded artifacts: \(viewModel.storageUsageText)")
+            }
+
+            Section("Developer") {
+                Text("Core AI runtime integration is pending until a compatible `.aimodel` LLM artifact is available.")
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                Button("Save Settings") {
+                    persist()
+                }
+                Button("Reset Settings to Defaults", role: .destructive) {
+                    Task {
+                        await viewModel.resetSettings()
+                        draftSettings = viewModel.settings
+                    }
+                }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(AppSpacing.xl)
         .navigationTitle("Settings")
+        .onChange(of: viewModel.settings) {
+            draftSettings = viewModel.settings
+        }
+    }
+
+    private func persist() {
+        viewModel.updateSettings(draftSettings)
     }
 }

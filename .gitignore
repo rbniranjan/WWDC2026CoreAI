@@ -30,6 +30,10 @@ Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDisease
 Examples/01-CoreAI-PlantDiseaseDetector/ios/PlantDiseaseDetectorApp/PlantDiseaseDetectorApp/Resources/AIModels/*.aimodel/
 Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/*.aimodel
 Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/*.aimodel/
+Examples/02-CoreAI-LocalChat/**/Resources/AIModels/*.aimodel
+Examples/02-CoreAI-LocalChat/**/Resources/AIModels/*.aimodel/
+Examples/02-CoreAI-LocalChat/**/DownloadedModels/
+Examples/02-CoreAI-LocalChat/**/ApplicationSupportModels/
 !Examples/01-CoreAI-PlantDiseaseDetector/models/**/.gitkeep
 !Examples/01-CoreAI-PlantDiseaseDetector/models/**/README.md
 
@@ -37,6 +41,9 @@ Examples/02-CoreAI-LocalChat/CoreAIChat/CoreAIChat/Resources/AIModels/*.aimodel/
 DerivedData/
 .build/
 .swiftpm/
+Examples/02-CoreAI-LocalChat/**/.build/
+Examples/02-CoreAI-LocalChat/**/.swiftpm/
+Examples/02-CoreAI-LocalChat/**/DerivedData/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/

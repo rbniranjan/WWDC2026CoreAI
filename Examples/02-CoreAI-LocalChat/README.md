@@ -1,16 +1,19 @@
 # CoreAI Local Chat
 
-CoreAI Local Chat is a Swift-only Phase 1 example for a local Apple Core AI chat app shell.
+CoreAI Local Chat is a Swift-only example for a local Apple Core AI chat app shell.
 
 The app currently provides:
 
 - SwiftUI chat window with a working mock runtime.
-- Bundled JSON model manifest.
-- Model list, model detail, and active model selection.
-- Local `.aimodel` detection under the app resources folder.
+- Bundled JSON model manifest plus optional remote manifest loading.
+- Cached remote-manifest fallback, then bundled-manifest fallback.
+- Model list, model detail, active model selection, and availability states.
+- Manual bundled `.aimodel` detection under the app resources folder.
+- Download-manager foundation for manifest-backed model artifacts.
+- Settings for generation defaults, manifest source, and storage visibility.
 - A documented runtime boundary for future Core AI LLM generation integration.
 
-This phase intentionally does not include a download manager, full settings screen, RAG, Python code, llama.cpp, third-party inference runtimes, or real model artifacts.
+This example intentionally does not include Python code, llama.cpp, third-party inference runtimes, RAG, or real model artifacts. Core AI generation remains behind `CoreAIChatRuntime` until the exact Apple runtime API surface is finalized.
 
 ## Project
 
@@ -39,3 +42,5 @@ CoreAIChat/CoreAIChat/Resources/AIModels/
 The file names must match `CoreAIChat/CoreAIChat/Resources/ModelManifest/model_manifest.json`.
 
 `.aimodel` files are ignored by git and must not be committed.
+
+Downloaded artifacts are stored under the app's Application Support container, not under the repository. Archive extraction is intentionally deferred; downloaded archives are recorded as local artifacts but are not treated as runtime-ready `.aimodel` files.

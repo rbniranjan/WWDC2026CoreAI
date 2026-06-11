@@ -19,6 +19,12 @@
 		B20000000000000000000207 /* MockChatRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/MockChatRuntime.swift; sourceTree = "<group>"; };
 		B20000000000000000000208 /* RuntimeStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/RuntimeStatus.swift; sourceTree = "<group>"; };
 		B20000000000000000000209 /* ChatGenerationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Settings/ChatGenerationSettings.swift; sourceTree = "<group>"; };
+		B2000000000000000000021B /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Settings/AppSettingsStore.swift; sourceTree = "<group>"; };
+		B2000000000000000000021C /* DownloadedModelArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Downloads/DownloadedModelArtifact.swift; sourceTree = "<group>"; };
+		B2000000000000000000021D /* ModelChecksumVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Downloads/ModelChecksumVerifier.swift; sourceTree = "<group>"; };
+		B2000000000000000000021E /* ModelDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Downloads/ModelDownloadManager.swift; sourceTree = "<group>"; };
+		B2000000000000000000021F /* ModelDownloadProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Downloads/ModelDownloadProgress.swift; sourceTree = "<group>"; };
+		B20000000000000000000220 /* ModelDownloadState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Downloads/ModelDownloadState.swift; sourceTree = "<group>"; };
 		B2000000000000000000020A /* ActiveModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Storage/ActiveModelStore.swift; sourceTree = "<group>"; };
 		B2000000000000000000020B /* LocalModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Storage/LocalModelStore.swift; sourceTree = "<group>"; };
 		B2000000000000000000020C /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Chat/ChatInputBar.swift; sourceTree = "<group>"; };
@@ -63,6 +69,12 @@
 				B20000000000000000000207 /* MockChatRuntime.swift */,
 				B20000000000000000000208 /* RuntimeStatus.swift */,
 				B20000000000000000000209 /* ChatGenerationSettings.swift */,
+				B2000000000000000000021B /* AppSettingsStore.swift */,
+				B2000000000000000000021C /* DownloadedModelArtifact.swift */,
+				B2000000000000000000021D /* ModelChecksumVerifier.swift */,
+				B2000000000000000000021E /* ModelDownloadManager.swift */,
+				B2000000000000000000021F /* ModelDownloadProgress.swift */,
+				B20000000000000000000220 /* ModelDownloadState.swift */,
 				B2000000000000000000020A /* ActiveModelStore.swift */,
 				B2000000000000000000020B /* LocalModelStore.swift */,
 				B2000000000000000000020C /* ChatInputBar.swift */,
@@ -181,6 +193,12 @@
 		B20000000000000000000107 /* MockChatRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000207 /* MockChatRuntime.swift */; };
 		B20000000000000000000108 /* RuntimeStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000208 /* RuntimeStatus.swift */; };
 		B20000000000000000000109 /* ChatGenerationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000209 /* ChatGenerationSettings.swift */; };
+		B2000000000000000000011D /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000021B /* AppSettingsStore.swift */; };
+		B2000000000000000000011E /* DownloadedModelArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000021C /* DownloadedModelArtifact.swift */; };
+		B2000000000000000000011F /* ModelChecksumVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000021D /* ModelChecksumVerifier.swift */; };
+		B20000000000000000000120 /* ModelDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000021E /* ModelDownloadManager.swift */; };
+		B20000000000000000000121 /* ModelDownloadProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000021F /* ModelDownloadProgress.swift */; };
+		B20000000000000000000122 /* ModelDownloadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000220 /* ModelDownloadState.swift */; };
 		B2000000000000000000010A /* ActiveModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000020A /* ActiveModelStore.swift */; };
 		B2000000000000000000010B /* LocalModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000020B /* LocalModelStore.swift */; };
 		B2000000000000000000010C /* ChatInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000020C /* ChatInputBar.swift */; };
@@ -226,6 +244,12 @@
 				B20000000000000000000107 /* MockChatRuntime.swift in Sources */,
 				B20000000000000000000108 /* RuntimeStatus.swift in Sources */,
 				B20000000000000000000109 /* ChatGenerationSettings.swift in Sources */,
+				B2000000000000000000011D /* AppSettingsStore.swift in Sources */,
+				B2000000000000000000011E /* DownloadedModelArtifact.swift in Sources */,
+				B2000000000000000000011F /* ModelChecksumVerifier.swift in Sources */,
+				B20000000000000000000120 /* ModelDownloadManager.swift in Sources */,
+				B20000000000000000000121 /* ModelDownloadProgress.swift in Sources */,
+				B20000000000000000000122 /* ModelDownloadState.swift in Sources */,
 				B2000000000000000000010A /* ActiveModelStore.swift in Sources */,
 				B2000000000000000000010B /* LocalModelStore.swift in Sources */,
 				B2000000000000000000010C /* ChatInputBar.swift in Sources */,

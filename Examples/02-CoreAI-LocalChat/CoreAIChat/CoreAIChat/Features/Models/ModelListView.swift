@@ -19,16 +19,26 @@ struct ModelListView: View {
                         }
                     }
                     .refreshable {
-                        viewModel.load()
+                        await viewModel.load()
                     }
                 }
             }
             .navigationTitle("Models")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task { await viewModel.load() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .accessibilityLabel("Refresh model catalog")
+                }
+            }
             .navigationDestination(for: ModelVariant.self) { model in
                 ModelDetailView(model: model, viewModel: viewModel)
             }
             .task {
-                viewModel.load()
+                await viewModel.load()
             }
         }
     }
@@ -58,11 +68,16 @@ struct ModelListView: View {
 
             HStack(spacing: AppSpacing.md) {
                 Label("\(model.contextWindow) tokens", systemImage: "text.word.spacing")
-                Label(viewModel.isAvailable(model) ? "Local" : "Missing", systemImage: viewModel.isAvailable(model) ? "checkmark.circle" : "xmark.circle")
+                Label(viewModel.availability(for: model).displayText, systemImage: viewModel.isAvailable(model) ? "checkmark.circle" : "xmark.circle")
                     .foregroundStyle(viewModel.isAvailable(model) ? AppColors.success : AppColors.warning)
+                Label(viewModel.downloadState(for: model).displayText, systemImage: model.downloadSupported ? "arrow.down.circle" : "hand.raised")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
+
+            Text("Manifest: \(viewModel.manifestSource.rawValue)")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .padding(.vertical, AppSpacing.xs)
     }

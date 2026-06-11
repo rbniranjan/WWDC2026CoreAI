@@ -28,12 +28,12 @@ struct RootView: View {
                 case .models:
                     ModelListView(viewModel: modelLibraryViewModel)
                 case .settings:
-                    SettingsComingSoonView()
+                    SettingsView(viewModel: modelLibraryViewModel)
                 }
             }
         }
         .task {
-            modelLibraryViewModel.load()
+            await modelLibraryViewModel.load()
             await chatViewModel.refreshActiveModel()
         }
         .onChange(of: modelLibraryViewModel.activeModelID) {

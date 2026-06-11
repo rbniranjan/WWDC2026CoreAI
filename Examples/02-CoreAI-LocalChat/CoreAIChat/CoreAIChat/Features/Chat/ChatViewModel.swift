@@ -7,6 +7,7 @@ final class ChatViewModel: ObservableObject {
     ]
     @Published var inputText = ""
     @Published private(set) var activeModel: ModelVariant?
+    @Published private(set) var activeModelAvailability: ModelAvailability = .missing
     @Published private(set) var runtimeStatus: RuntimeStatus = .idle
     @Published private(set) var isGenerating = false
 
@@ -14,38 +15,53 @@ final class ChatViewModel: ObservableObject {
     private let catalogService: ModelCatalogService
     private let activeModelStore: ActiveModelStore
     private let localModelStore: LocalModelStore
-    private let generationSettings: ChatGenerationSettings
+    private let appSettingsStore: AppSettingsStore
 
     init(
         runtime: ChatModelRuntime = MockChatRuntime(),
         catalogService: ModelCatalogService = ModelCatalogService(),
         activeModelStore: ActiveModelStore = ActiveModelStore(),
         localModelStore: LocalModelStore = LocalModelStore(),
-        generationSettings: ChatGenerationSettings = .default
+        appSettingsStore: AppSettingsStore = AppSettingsStore()
     ) {
         self.runtime = runtime
         self.catalogService = catalogService
         self.activeModelStore = activeModelStore
         self.localModelStore = localModelStore
-        self.generationSettings = generationSettings
+        self.appSettingsStore = appSettingsStore
     }
 
     var activeModelDisplayName: String {
-        activeModel?.name ?? "No model selected — using mock runtime."
+        guard let activeModel else {
+            return "No model selected — using mock runtime."
+        }
+
+        if activeModelAvailability.isUsable {
+            return activeModel.name
+        }
+
+        return "\(activeModel.name) unavailable — using mock runtime."
     }
 
     func refreshActiveModel() async {
+        let settings = appSettingsStore.load()
+        let result = await catalogService.loadCatalog(
+            useRemote: settings.useRemoteManifest,
+            remoteManifestURL: settings.remoteManifestURL
+        )
+
         guard let activeID = activeModelStore.activeModelID,
-              let manifest = try? catalogService.loadManifest(),
-              let model = manifest.models.first(where: { $0.id == activeID }) else {
+              let model = result.manifest.models.first(where: { $0.id == activeID }) else {
             activeModel = nil
+            activeModelAvailability = .missing
             await runtime.load(model: nil, localURL: nil)
             runtimeStatus = runtime.status
             return
         }
 
         activeModel = model
-        await runtime.load(model: model, localURL: localModelStore.localURL(for: model))
+        activeModelAvailability = localModelStore.availability(for: model)
+        await runtime.load(model: activeModelAvailability.isUsable ? model : nil, localURL: localModelStore.localURL(for: model))
         runtimeStatus = runtime.status
     }
 
@@ -61,7 +77,7 @@ final class ChatViewModel: ObservableObject {
         do {
             let response = try await runtime.generateResponse(
                 for: messages,
-                settings: generationSettings
+                settings: appSettingsStore.load().generationSettings
             )
             messages.append(ChatMessage(role: .assistant, content: response))
         } catch {
