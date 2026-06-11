@@ -62,18 +62,48 @@
       },
       "artifacts": [
         {
-          "id": "language_bundle_ship",
-          "role": "languageBundle",
-          "format": "aimodelLanguageBundle",
-          "repositorySubpath": "gpu-pipelined/qwen3_5_0_8b_decode_int8hu_perchan_sym/",
+          "id": "bundle_metadata",
+          "role": "metadata",
+          "format": "directory",
+          "repositorySubpath": "gpu-pipelined/qwen3_5_0_8b_decode_int8hu_perchan_sym/metadata.json",
           "manualInstallDirectoryName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
-          "fileName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
+          "fileName": "qwen3_5_0_8b_decode_int8hu_perchan_sym/metadata.json",
           "downloadURL": null,
-          "expectedSizeBytes": 1300000000,
+          "expectedSizeBytes": null,
           "sha256": null,
           "required": true,
           "notes": [
-            "Full bundle: .aimodel + tokenizer + metadata. Upstream keeps the historical 'perchan' directory name; notes say the head is per-block-32 absmax int8."
+            "Verified local bundle contains metadata.json at the bundle root."
+          ]
+        },
+        {
+          "id": "language_model_aimodel",
+          "role": "languageDecoder",
+          "format": "aimodel",
+          "repositorySubpath": "gpu-pipelined/qwen3_5_0_8b_decode_int8hu_perchan_sym/qwen3_5_0_8b_decode_int8hu_perchan_sym.aimodel/",
+          "manualInstallDirectoryName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
+          "fileName": "qwen3_5_0_8b_decode_int8hu_perchan_sym/qwen3_5_0_8b_decode_int8hu_perchan_sym.aimodel",
+          "downloadURL": null,
+          "expectedSizeBytes": null,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Verified local bundle contains a nested .aimodel directory for the language model."
+          ]
+        },
+        {
+          "id": "tokenizer_directory",
+          "role": "tokenizer",
+          "format": "directory",
+          "repositorySubpath": "gpu-pipelined/qwen3_5_0_8b_decode_int8hu_perchan_sym/tokenizer/",
+          "manualInstallDirectoryName": "qwen3_5_0_8b_decode_int8hu_perchan_sym",
+          "fileName": "qwen3_5_0_8b_decode_int8hu_perchan_sym/tokenizer",
+          "downloadURL": null,
+          "expectedSizeBytes": null,
+          "sha256": null,
+          "required": true,
+          "notes": [
+            "Verified local bundle contains a tokenizer directory."
           ]
         }
       ],
@@ -81,7 +111,9 @@
         "source": "included-in-language-bundle-or-upstream-huggingface",
         "type": "qwen-tokenizer",
         "chatTemplate": "qwen-chat",
-        "tokenizerFiles": [],
+        "tokenizerFiles": [
+          "tokenizer/"
+        ],
         "stopTokenIds": [],
         "stopStrings": [],
         "notes": []
