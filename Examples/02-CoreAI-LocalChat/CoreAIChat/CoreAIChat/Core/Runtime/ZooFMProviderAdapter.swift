@@ -1,6 +1,7 @@
 import Foundation
 
-#if ENABLE_ZOO_FM_PROVIDER && canImport(ZooFMProvider)
+#if ENABLE_ZOO_FM_PROVIDER && canImport(FoundationModels) && canImport(ZooFMProvider)
+import FoundationModels
 import ZooFMProvider
 #endif
 
@@ -9,7 +10,7 @@ struct ZooFMProviderAdapter: ExternalRuntimeProvider {
     let displayName = "ZooFMProvider"
 
     func availability(for context: ExternalRuntimeContext) -> ExternalRuntimeAvailability {
-        #if ENABLE_ZOO_FM_PROVIDER && canImport(ZooFMProvider)
+        #if ENABLE_ZOO_FM_PROVIDER && canImport(FoundationModels) && canImport(ZooFMProvider)
         guard let bundleURL = context.bundleURL else {
             return .unavailable(
                 reason: "ENABLE_ZOO_FM_PROVIDER is set and ZooFMProvider is linked, but no local bundle URL was supplied."
@@ -46,6 +47,45 @@ struct ZooFMProviderAdapter: ExternalRuntimeProvider {
                 "Default CoreAIChat builds keep ZooFMProvider optional and out of the target dependency graph."
             ].joined(separator: " ")
         )
+        #endif
+    }
+
+    func generateResponse(
+        for messages: [ChatMessage],
+        settings: ChatGenerationSettings,
+        context: ExternalRuntimeContext
+    ) async throws -> String {
+        let availability = availability(for: context)
+        guard availability.isAvailable else {
+            throw ExternalRuntimeProviderError.unavailable(availability.summary)
+        }
+
+        guard let prompt = messages.last(where: { $0.role == .user })?.content
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !prompt.isEmpty else {
+            throw ExternalRuntimeProviderError.missingPrompt
+        }
+
+        #if ENABLE_ZOO_FM_PROVIDER && canImport(FoundationModels) && canImport(ZooFMProvider)
+        guard let bundleURL = context.bundleURL else {
+            throw ExternalRuntimeProviderError.unavailable("ZooFMProvider bundle URL is missing.")
+        }
+
+        do {
+            let model = try await ZooLanguageModel(resourcesAt: bundleURL)
+            let session = LanguageModelSession(
+                model: model,
+                instructions: "You are a helpful assistant running locally on device."
+            )
+            let response = try await session.respond(to: prompt)
+            return response.content
+        } catch {
+            throw ExternalRuntimeProviderError.generationFailed(
+                "ZooFMProvider generation failed for \(context.modelName ?? context.modelID ?? "the selected model"): \(error.localizedDescription)"
+            )
+        }
+        #else
+        throw ExternalRuntimeProviderError.unavailable(availability.summary)
         #endif
     }
 }

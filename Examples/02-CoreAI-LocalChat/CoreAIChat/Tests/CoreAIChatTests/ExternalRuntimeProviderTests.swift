@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import CoreAIChatCore
 
+@MainActor
 struct ExternalRuntimeProviderTests {
     @Test func defaultBuildDoesNotEnableZooFMProviderFlag() {
         #expect(!ExternalRuntimeBuildOptions.zooFMProviderCompileFlagEnabled)

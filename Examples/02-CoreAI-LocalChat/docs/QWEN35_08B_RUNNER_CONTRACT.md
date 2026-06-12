@@ -97,6 +97,18 @@ This means the blocker is not "simulator only". It is a combination of:
 - on generation attempt, emits diagnostics and stops with a clear runtime blocker error
 - never fakes a generated answer
 
+## Optional live app route
+
+Example 02 now includes a local-only `ChatRuntimeRouter` path guarded by `ENABLE_ZOO_FM_PROVIDER`.
+
+Current behavior:
+
+- default builds still do not require `ZooFMProvider`
+- the internal placeholder model ID `qwen-small-q4-placeholder` can map to the relative local bundle directory `qwen3_5_0_8b_decode_int8hu_perchan_sym`
+- when the flag and package are both absent, the live chat path reports `External runtime: unavailable` with a clear disabled message
+- when the flag and package are both present, the adapter attempts a real `ZooLanguageModel` + `LanguageModelSession` request
+- this path still depends on a local-only patched `coreai-models` setup and has not been made part of the default build graph
+
 ## Next steps
 
 1. Re-check a newer Xcode / OS beta for public `LanguageBundle` and `EngineFactory.createEngine`

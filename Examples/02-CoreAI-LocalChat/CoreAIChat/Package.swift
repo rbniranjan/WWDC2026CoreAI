@@ -28,6 +28,7 @@ let package = Package(
                 "Core/Downloads/ModelDownloadProgress.swift",
                 "Core/Downloads/ModelDownloadState.swift",
                 "Core/Runtime/ChatModelRuntime.swift",
+                "Core/Runtime/ChatRuntimeRouter.swift",
                 "Core/Runtime/CoreAIChatRuntime.swift",
                 "Core/Runtime/CoreAIRunnerArchitecture.swift",
                 "Core/Runtime/CoreAIConcreteRunnerSkeletons.swift",

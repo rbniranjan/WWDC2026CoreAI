@@ -87,6 +87,10 @@ struct ChatView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
+                            Text(viewModel.externalRuntimeStatusLine)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
                         }
 
                         Spacer(minLength: AppSpacing.sm)
@@ -126,7 +130,7 @@ struct ChatView: View {
     private var generatingRow: some View {
         HStack(spacing: AppSpacing.sm) {
             ProgressView()
-            Text("Mock runtime is generating")
+            Text(viewModel.externalRuntimeStatusLine == "External runtime: running" ? "External runtime is generating" : "Mock runtime is generating")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()

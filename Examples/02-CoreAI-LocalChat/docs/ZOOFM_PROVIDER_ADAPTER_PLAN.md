@@ -9,8 +9,9 @@ Add a placeholder adapter boundary in the main app that can compile whether or n
 Current state:
 
 - `ZooFMProvider` is not part of the main app target graph.
-- `MockChatRuntime` and the existing runner registry remain the live behavior.
-- The adapter only reports availability or an explicit unavailable reason.
+- `MockChatRuntime` remains the default fallback path.
+- `ChatRuntimeRouter` is now the live chat boundary and only attempts the external runtime for the Qwen placeholder model.
+- The adapter reports availability or an explicit unavailable reason, and only tries generation when the local flag and package are both present.
 
 ## Added Boundary Types
 
@@ -76,8 +77,8 @@ When `ZooFMProvider` becomes importable in a future spike:
 
 - adapter can return `.available` only when the compile flag is enabled and the local bundle path exists
 - missing bundle path or missing local bundle directory returns a clear `.unavailable` reason
-- no chat-generation wiring happens yet
-- the adapter remains a boundary object until a later phase integrates it into runner selection
+- the live chat router can attempt a real `LanguageModelSession` generation for the Qwen placeholder model
+- non-Qwen models and default builds remain on the mock path
 
 ## Future Wiring
 
@@ -124,6 +125,8 @@ Expected bundle contents:
 - `qwen3_5_0_8b_decode_int8hu_perchan_sym.aimodel/`
 - `tokenizer/`
 
+The current live router maps the internal placeholder model ID `qwen-small-q4-placeholder` to this bundle directory when `ENABLE_ZOO_FM_PROVIDER` is enabled.
+
 ### 5. App settings/runtime toggle
 
 Do not auto-enable the external runtime.
@@ -145,6 +148,6 @@ Requirements for that toggle:
 After the package/dependency policy is accepted:
 
 1. add the external package in a disabled-by-default integration path
-2. map `runtime.adapter` values to the placeholder adapter
+2. keep `ChatRuntimeRouter` as the only live integration point
 3. thread adapter availability into model detail or developer settings
-4. only then consider generation wiring for the Qwen local bundle
+4. broaden generation wiring beyond the Qwen placeholder only after the local-only path is proven on hardware

@@ -7,6 +7,7 @@ final class ChatViewModel: ObservableObject {
     @Published private(set) var activeModel: ModelVariant?
     @Published private(set) var activeModelAvailability: ModelAvailability = .missing
     @Published private(set) var runtimeStatus: RuntimeStatus = .idle
+    @Published private(set) var externalRuntimeStatusLine = "External runtime: disabled"
     @Published private(set) var isGenerating = false
 
     private let runtime: ChatModelRuntime
@@ -16,7 +17,7 @@ final class ChatViewModel: ObservableObject {
     private let appSettingsStore: AppSettingsStore
 
     init(
-        runtime: ChatModelRuntime = MockChatRuntime(),
+        runtime: ChatModelRuntime = ChatRuntimeRouter(),
         catalogService: ModelCatalogService = ModelCatalogService(),
         activeModelStore: ActiveModelStore = ActiveModelStore(),
         localModelStore: LocalModelStore = LocalModelStore(),
@@ -34,6 +35,10 @@ final class ChatViewModel: ObservableObject {
             return "No model selected — using mock runtime."
         }
 
+        if externalRuntimeStatusLine != "External runtime: disabled" {
+            return "\(activeModel.name) — external runtime candidate"
+        }
+
         if activeModelAvailability.isUsable {
             return activeModel.name
         }
@@ -44,6 +49,10 @@ final class ChatViewModel: ObservableObject {
     var runtimeModeText: String {
         guard activeModel != nil else {
             return "Mock runtime"
+        }
+
+        if externalRuntimeStatusLine != "External runtime: disabled" {
+            return "ZooFMProvider experimental path"
         }
 
         if activeModelAvailability.isUsable {
@@ -66,13 +75,15 @@ final class ChatViewModel: ObservableObject {
             activeModelAvailability = .missing
             await runtime.load(model: nil, localURL: nil)
             runtimeStatus = runtime.status
+            externalRuntimeStatusLine = runtime.externalRuntimeStatusLine
             return
         }
 
         activeModel = model
         activeModelAvailability = localModelStore.availability(for: model)
-        await runtime.load(model: activeModelAvailability.isUsable ? model : nil, localURL: localModelStore.localURL(for: model))
+        await runtime.load(model: model, localURL: localModelStore.localURL(for: model))
         runtimeStatus = runtime.status
+        externalRuntimeStatusLine = runtime.externalRuntimeStatusLine
     }
 
     func send() async {
@@ -95,6 +106,7 @@ final class ChatViewModel: ObservableObject {
         }
 
         runtimeStatus = runtime.status
+        externalRuntimeStatusLine = runtime.externalRuntimeStatusLine
         isGenerating = false
     }
 

@@ -39,8 +39,8 @@ That is useful as reference material, but it is not the smallest integration pat
 Recommended strategy for the next implementation phase:
 
 1. Keep the current app and tests unchanged for simulator builds.
-2. Add a new optional runner file in our app, for example `ZooFMChatRuntime.swift`, that conforms to our existing `ChatModelRuntime`.
-3. Gate that runner behind a local compile flag such as `ENABLE_ZOO_FM_PROVIDER` and environments where the Apple runtime stack is available.
+2. Use a small live router in the app to decide whether a selected model stays on `MockChatRuntime` or can attempt the external runtime path.
+3. Gate that route behind a local compile flag such as `ENABLE_ZOO_FM_PROVIDER` and environments where the Apple runtime stack is available.
 4. Use `ZooFMProvider` as the external runtime layer, not the upstream app code.
 5. Keep `MockChatRuntime` as the fallback for simulator and unsupported targets.
 
@@ -143,11 +143,11 @@ Current policy:
 
 The smallest acceptable integration would be:
 
-1. Keep `CoreAIChatRuntime` and `CoreAIModelRunnerRegistry`.
-2. Add one new runner case selected by `runtime.adapter`.
-3. Inside that runner, bridge our prompt/request model to a `ZooLanguageModel` session.
-4. Convert the runtime response back into our existing chat message/result type.
-5. Keep all UI, model-list, settings, and fallback behavior unchanged.
+1. Keep `ChatModelRuntime` and the current model selection flow.
+2. Route only the internal Qwen placeholder model to an optional external runtime attempt.
+3. Inside that route, bridge the current chat request to a `ZooLanguageModel` session.
+4. Convert the runtime response back into the existing chat message/result type.
+5. Keep all UI, model-list, settings, and fallback behavior unchanged for default builds.
 
 This avoids importing external runtime assumptions into the rest of the app.
 
@@ -174,6 +174,6 @@ Do not vendor code yet.
 
 Next step:
 
-1. Create a small isolated branch or local spike target that attempts to compile only `ZooFMProvider` plus the required Apple `coreai-models` dependency stack on a device-capable Xcode 27 environment.
-2. If that compiles, add a thin adapter runner behind our existing registry.
-3. Keep simulator builds on `MockChatRuntime` until a device-only runtime path is proven.
+1. Keep the current local-only `ENABLE_ZOO_FM_PROVIDER` route disabled in shared builds.
+2. When a developer has the local package/dependency setup, test the Qwen placeholder model on real hardware.
+3. If generation proves reliable, move from single-model routing to a broader adapter mapping.

@@ -48,6 +48,7 @@
 		B20000000000000000000127 /* Core/Runtime/ExternalRuntimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000225 /* Core/Runtime/ExternalRuntimeProvider.swift */; };
 		B20000000000000000000128 /* Core/Runtime/ZooFMProviderAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000226 /* Core/Runtime/ZooFMProviderAdapter.swift */; };
 		B20000000000000000000129 /* Core/Runtime/ExternalRuntimeBuildOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000227 /* Core/Runtime/ExternalRuntimeBuildOptions.swift */; };
+		B2000000000000000000012A /* Core/Runtime/ChatRuntimeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000228 /* Core/Runtime/ChatRuntimeRouter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -93,6 +94,7 @@
 		B20000000000000000000225 /* Core/Runtime/ExternalRuntimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/ExternalRuntimeProvider.swift; sourceTree = "<group>"; };
 		B20000000000000000000226 /* Core/Runtime/ZooFMProviderAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/ZooFMProviderAdapter.swift; sourceTree = "<group>"; };
 		B20000000000000000000227 /* Core/Runtime/ExternalRuntimeBuildOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/ExternalRuntimeBuildOptions.swift; sourceTree = "<group>"; };
+		B20000000000000000000228 /* Core/Runtime/ChatRuntimeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Runtime/ChatRuntimeRouter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +125,7 @@
 				B20000000000000000000204 /* Core/ModelCatalog/ModelVariant.swift */,
 				B20000000000000000000221 /* Core/ModelCatalog/CoreAIExternalModelCatalog.swift */,
 				B20000000000000000000205 /* Core/Runtime/ChatModelRuntime.swift */,
+				B20000000000000000000228 /* Core/Runtime/ChatRuntimeRouter.swift */,
 				B20000000000000000000206 /* Core/Runtime/CoreAIChatRuntime.swift */,
 				B20000000000000000000222 /* Core/Runtime/CoreAIRunnerArchitecture.swift */,
 				B20000000000000000000223 /* Core/Runtime/CoreAIConcreteRunnerSkeletons.swift */,
@@ -249,6 +252,7 @@
 				B20000000000000000000104 /* Core/ModelCatalog/ModelVariant.swift in Sources */,
 				B20000000000000000000123 /* Core/ModelCatalog/CoreAIExternalModelCatalog.swift in Sources */,
 				B20000000000000000000105 /* Core/Runtime/ChatModelRuntime.swift in Sources */,
+				B2000000000000000000012A /* Core/Runtime/ChatRuntimeRouter.swift in Sources */,
 				B20000000000000000000106 /* Core/Runtime/CoreAIChatRuntime.swift in Sources */,
 				B20000000000000000000124 /* Core/Runtime/CoreAIRunnerArchitecture.swift in Sources */,
 				B20000000000000000000125 /* Core/Runtime/CoreAIConcreteRunnerSkeletons.swift in Sources */,

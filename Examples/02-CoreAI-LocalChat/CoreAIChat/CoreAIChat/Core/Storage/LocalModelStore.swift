@@ -121,6 +121,11 @@ struct LocalModelStore {
         return candidates.first(where: bundleExists(at:)) ?? candidates.first
     }
 
+    func externalBundleRootURL(directoryName: String) -> URL? {
+        let candidates = externalBundleRootCandidates(for: directoryName)
+        return candidates.first(where: bundleExists(at:)) ?? candidates.first
+    }
+
     func resolvedArtifacts(for profile: CoreAIExternalModelProfile) -> [CoreAIResolvedArtifact] {
         let bundleRootURL = resolvedExternalBundleRootURL(for: profile)
 
